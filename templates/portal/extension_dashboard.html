@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Extension Staff Dashboard{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500">My Extension Activities</p>
+                <p class="text-2xl font-bold text-gray-800">{{ total_extension }}</p>
+            </div>
+            <div class="bg-purple-100 rounded-full p-3">
+                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500">Planning</p>
+                <p class="text-2xl font-bold text-yellow-600">{{ planning_extension }}</p>
+            </div>
+            <div class="bg-yellow-100 rounded-full p-3">
+                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500">Completed</p>
+                <p class="text-2xl font-bold text-green-600">{{ completed_extension }}</p>
+            </div>
+            <div class="bg-green-100 rounded-full p-3">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold">My Extension Activities</h3>
+        <a href="{% url 'extension_create' %}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-800 transition">
+            New Extension Activity
+        </a>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="border-b border-gray-200">
+                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Title</th>
+                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Type</th>
+                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
+                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Beneficiaries</th>
+                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ext in my_extension %}
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="py-3 px-4">{{ ext.title }}</td>
+                    <td class="py-3 px-4">{{ ext.get_extension_type_display }}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 text-xs rounded-full 
+                            {% if ext.status == 'PLANNING' %}bg-yellow-100 text-yellow-800
+                            {% elif ext.status == 'ONGOING' %}bg-blue-100 text-blue-800
+                            {% elif ext.status == 'COMPLETED' %}bg-green-100 text-green-800
+                            {% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ ext.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4">{{ ext.beneficiary_count }}</td>
+                    <td class="py-3 px-4">
+                        <a href="{% url 'extension_detail' ext.pk %}" class="text-primary hover:text-blue-800">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="py-8 text-center text-gray-500">No extension activities yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

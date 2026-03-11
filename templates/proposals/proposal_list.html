@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Proposals{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow p-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <h3 class="text-lg font-semibold mb-4 md:mb-0">All Proposals</h3>
+        
+        <div class="flex flex-col md:flex-row gap-4">
+            <form method="get" class="flex gap-2">
+                <input type="text" name="search" placeholder="Search proposals..." 
+                    value="{{ request.GET.search }}"
+                    class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                
+                <select name="status" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    <option value="">All Status</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                
+                <select name="proposal_type" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    <option value="">All Types</option>
+                    {% for value, label in type_choices %}
+                    <option value="{{ value }}" {% if request.GET.proposal_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                
+                <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-800">Filter</button>
+            </form>
+            
+            {% if user.is_faculty %}
+            <a href="{% url 'proposal_create' %}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-800 transition">
+                Submit Proposal
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="border-b border-gray-200">
+                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Title</th>
+                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Author</th>
+                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Type</th>
+                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
+                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Date</th>
+                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proposal in page_obj %}
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="py-3 px-4 font-medium">{{ proposal.title }}</td>
+                    <td class="py-3 px-4">{{ proposal.faculty_author.get_full_name|default:proposal.faculty_author.username }}</td>
+                    <td class="py-3 px-4">{{ proposal.get_proposal_type_display }}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 text-xs rounded-full 
+                            {% if proposal.status == 'PENDING' %}bg-yellow-100 text-yellow-800
+                            {% elif proposal.status == 'APPROVED' %}bg-green-100 text-green-800
+                            {% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ proposal.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-500">{{ proposal.date_submitted|date:"M d, Y" }}</td>
+                    <td class="py-3 px-4">
+                        <a href="{% url 'proposal_detail' proposal.pk %}" class="text-primary hover:text-blue-800">View</a>
+                        {% if user.is_admin and proposal.status == 'PENDING' %}
+                        <span class="mx-2 text-gray-300">|</span>
+                        <a href="{% url 'proposal_review' proposal.pk %}" class="text-green-600 hover:text-green-800">Review</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="py-8 text-center text-gray-500">No proposals found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if page_obj.has_other_pages %}
+    <div class="mt-4 flex justify-center">
+        <nav class="flex gap-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Previous</a>
+            {% endif %}
+            
+            <span class="px-4 py-2 text-gray-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Next</a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Research Records{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow p-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <h3 class="text-lg font-semibold mb-4 md:mb-0">Research Records</h3>
+        
+        <div class="flex gap-4">
+            {% if user.is_research_staff %}
+            <a href="{% url 'faculty_abstracts' %}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                View Faculty Abstracts
+            </a>
+            {% endif %}
+            
+            {% if user.is_research_staff or user.is_admin %}
+            <a href="{% url 'research_create' %}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-800">
+                Add Research
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="border-b border-gray-200">
+                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Project</th>
+                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Lead Researcher</th>
+                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
+                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Start Date</th>
+                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in page_obj %}
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="py-3 px-4 font-medium">{{ record.proposal.title }}</td>
+                    <td class="py-3 px-4">{{ record.lead_researcher.get_full_name }}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 text-xs rounded-full 
+                            {% if record.status == 'ONGOING' %}bg-blue-100 text-blue-800
+                            {% elif record.status == 'COMPLETED' %}bg-green-100 text-green-800
+                            {% elif record.status == 'PUBLISHED' %}bg-purple-100 text-purple-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ record.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-500">{{ record.start_date|date:"M d, Y" }}</td>
+                    <td class="py-3 px-4">
+                        <a href="{% url 'research_detail' record.pk %}" class="text-primary hover:text-blue-800">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="py-8 text-center text-gray-500">No research records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
