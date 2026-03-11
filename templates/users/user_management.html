@@ -3,62 +3,228 @@
 {% block page_title %}User Management{% endblock %}
 
 {% block content %}
-<div class="bg-white rounded-lg shadow p-6">
-    <div class="flex items-center justify-between mb-6">
-        <h3 class="text-lg font-semibold">All Users</h3>
-        <a href="{% url 'user_create' %}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-800">
-            Add New User
-        </a>
+<div class="space-y-6" x-data="userManagement()">
+    <!-- Header Section -->
+    <div class="bg-white rounded-xl shadow-soft border border-slate-200 p-6 lg:p-8">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <div>
+                <h3 class="text-2xl font-bold text-slate-900">User Management</h3>
+                <p class="text-slate-600 text-sm mt-1">Manage system users and their roles</p>
+            </div>
+            <a href="{% url 'user_create' %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Add New User
+            </a>
+        </div>
     </div>
-    
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead>
-                <tr class="border-b border-gray-200">
-                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Username</th>
-                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Full Name</th>
-                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Email</th>
-                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Role</th>
-                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
-                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user in users %}
-                <tr class="border-b border-gray-100 hover:bg-gray-50">
-                    <td class="py-3 px-4">{{ user.username }}</td>
-                    <td class="py-3 px-4">{{ user.get_full_name }}</td>
-                    <td class="py-3 px-4">{{ user.email }}</td>
-                    <td class="py-3 px-4">
-                        <span class="px-2 py-1 text-xs rounded-full 
-                            {% if user.role == 'ADMIN' %}bg-red-100 text-red-800
-                            {% elif user.role == 'FACULTY' %}bg-blue-100 text-blue-800
-                            {% elif user.role == 'RESEARCH_STAFF' %}bg-green-100 text-green-800
-                            {% else %}bg-purple-100 text-purple-800{% endif %}">
-                            {{ user.get_role_display }}
-                        </span>
-                    </td>
-                    <td class="py-3 px-4">
-                        {% if user.is_active %}
-                        <span class="text-green-600">Active</span>
-                        {% else %}
-                        <span class="text-red-600">Inactive</span>
-                        {% endif %}
-                    </td>
-                    <td class="py-3 px-4">
-                        <a href="{% url 'user_edit' user.pk %}" class="text-primary hover:text-blue-800 mr-3">Edit</a>
-                        {% if user != request.user %}
-                        <a href="{% url 'user_delete' user.pk %}" class="text-red-600 hover:text-red-800">Delete</a>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="py-8 text-center text-gray-500">No users found.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl shadow-soft border border-slate-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-600 text-sm font-medium">Total Users</p>
+                    <p class="text-2xl font-bold text-slate-900 mt-1">{{ users.count }}</p>
+                </div>
+                <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-soft border border-slate-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-600 text-sm font-medium">Active</p>
+                    <p class="text-2xl font-bold text-emerald-600 mt-1">{{ users|length }}</p>
+                </div>
+                <div class="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-soft border border-slate-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-600 text-sm font-medium">Admins</p>
+                    <p class="text-2xl font-bold text-rose-600 mt-1">
+                        {% with admins=users|dictsort:"role" %}
+                            {% for user in users %}
+                                {% if user.role == 'ADMIN' %}{% endif %}
+                            {% endfor %}
+                        {% endwith %}
+                        0
+                    </p>
+                </div>
+                <div class="w-12 h-12 rounded-lg bg-rose-100 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-soft border border-slate-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-600 text-sm font-medium">Faculty</p>
+                    <p class="text-2xl font-bold text-amber-600 mt-1">0</p>
+                </div>
+                <div class="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C6.5 6.253 2 10.998 2 17s4.5 10.747 10 10.747c5.5 0 10-4.998 10-10.747 0-5.002-4.5-10.747-10-10.747z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="bg-white rounded-xl shadow-soft border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-slate-200 bg-slate-50">
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-600">User</th>
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-600">Email</th>
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-600">Role</th>
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-600">Department</th>
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-600">Status</th>
+                        <th class="text-left py-4 px-6 text-sm font-semibold text-slate-600">Joined</th>
+                        <th class="text-right py-4 px-6 text-sm font-semibold text-slate-600">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for user in users %}
+                    <tr class="hover:bg-slate-50 transition-colors duration-150">
+                        <td class="py-4 px-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-white font-semibold flex items-center justify-center flex-shrink-0">
+                                    {{ user.username|first|upper }}
+                                </div>
+                                <div>
+                                    <p class="font-medium text-slate-900">{{ user.get_full_name|default:user.username }}</p>
+                                    <p class="text-xs text-slate-500">@{{ user.username }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <p class="text-slate-700">{{ user.email|default:"-" }}</p>
+                        </td>
+                        <td class="py-4 px-6">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold 
+                                {% if user.role == 'ADMIN' %}bg-rose-100 text-rose-800
+                                {% elif user.role == 'FACULTY' %}bg-blue-100 text-blue-800
+                                {% elif user.role == 'RESEARCH_STAFF' %}bg-emerald-100 text-emerald-800
+                                {% elif user.role == 'EXTENSION_STAFF' %}bg-purple-100 text-purple-800
+                                {% else %}bg-slate-100 text-slate-800{% endif %}">
+                                {{ user.get_role_display }}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6">
+                            <p class="text-slate-700">{{ user.department|default:"-" }}</p>
+                        </td>
+                        <td class="py-4 px-6">
+                            {% if user.is_active %}
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                <span class="text-sm font-medium text-emerald-700">Active</span>
+                            </div>
+                            {% else %}
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                                <span class="text-sm font-medium text-slate-600">Inactive</span>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6">
+                            <p class="text-sm text-slate-600">{{ user.date_joined|date:"M d, Y" }}</p>
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{% url 'user_edit' user.pk %}" class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                    Edit
+                                </a>
+                                {% if user != request.user %}
+                                <button @click="openDeleteModal({{ user.pk }}, '{{ user.username }}')" class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-rose-600 hover:bg-rose-50 rounded-lg transition-colors duration-200">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    Delete
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="py-12 text-center">
+                            <div class="flex flex-col items-center justify-center">
+                                <svg class="w-12 h-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                                <p class="text-slate-600 font-medium">No users found</p>
+                                <p class="text-slate-500 text-sm">Get started by adding a new user</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div x-cloak x-show="deleteModalOpen" @click.away="deleteModalOpen = false" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-sm mx-4" @click.stop>
+            <div class="p-8">
+                <div class="flex items-center justify-center w-12 h-12 rounded-full bg-rose-100 mb-4">
+                    <svg class="w-6 h-6 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-2">Delete User</h3>
+                <p class="text-slate-600 mb-6">Are you sure you want to delete <span class="font-semibold" x-text="deleteUsername"></span>? This action cannot be undone.</p>
+                
+                <form method="post" :action="`/users/users/${deleteUserId}/delete/`" class="space-y-4">
+                    {% csrf_token %}
+                    <div class="flex gap-3">
+                        <button type="button" @click="deleteModalOpen = false" class="flex-1 px-4 py-2.5 text-slate-700 font-medium rounded-lg hover:bg-slate-100 transition-colors duration-200">
+                            Cancel
+                        </button>
+                        <button type="submit" class="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-medium rounded-lg transition-colors duration-200">
+                            Delete
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+function userManagement() {
+    return {
+        deleteModalOpen: false,
+        deleteUserId: null,
+        deleteUsername: '',
+        
+        openDeleteModal(userId, username) {
+            this.deleteUserId = userId;
+            this.deleteUsername = username;
+            this.deleteModalOpen = true;
+        }
+    }
+}
+</script>
 {% endblock %}

@@ -116,12 +116,78 @@
                     
                     <div class="flex items-center gap-4">
                         <!-- Notifications -->
-                        <button class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors relative focus:outline-none">
-                            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full border-2 border-white"></span>
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                            </svg>
-                        </button>
+                        <div class="relative" x-data="{ notifyOpen: false }">
+                            <button @click="notifyOpen = !notifyOpen" @click.away="notifyOpen = false" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors relative focus:outline-none">
+                                {% if notification_count > 0 %}
+                                <span class="absolute -top-1 -right-1 min-w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full border-2 border-white flex items-center justify-center leading-none">
+                                    {% if notification_count > 99 %}99+{% else %}{{ notification_count }}{% endif %}
+                                </span>
+                                {% endif %}
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                                </svg>
+                            </button>
+                            
+                            <!-- Dropdown Menu -->
+                            <div x-cloak x-show="notifyOpen" 
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="transform opacity-0 scale-95"
+                                 x-transition:enter-end="transform opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="transform opacity-100 scale-100"
+                                 x-transition:leave-end="transform opacity-0 scale-95"
+                                 class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-soft border border-slate-100 py-2 z-50">
+                                 
+                                 <div class="px-4 py-2 border-b border-slate-100 flex justify-between items-center">
+                                     <h3 class="text-sm font-bold text-slate-800">Notifications</h3>
+                                     {% if notification_count > 0 %}
+                                     <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-wider rounded-full">{{ notification_count }} New</span>
+                                     {% endif %}
+                                 </div>
+                                 
+                                 <div class="max-h-80 overflow-y-auto">
+                                     {% for notification in user_notifications %}
+                                     <a href="{{ notification.url }}" class="block px-4 py-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors group">
+                                         <div class="flex items-start gap-3">
+                                             <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5
+                                                 {% if notification.color == 'amber' %}bg-amber-100 text-amber-600
+                                                 {% elif notification.color == 'emerald' %}bg-emerald-100 text-emerald-600
+                                                 {% elif notification.color == 'red' %}bg-red-100 text-red-600
+                                                 {% elif notification.color == 'blue' %}bg-blue-100 text-blue-600
+                                                 {% elif notification.color == 'orange' %}bg-orange-100 text-orange-600
+                                                 {% else %}bg-slate-100 text-slate-600{% endif %}">
+                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                     {% if notification.icon == 'document-text' %}
+                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                     {% elif notification.icon == 'check-circle' %}
+                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                     {% elif notification.icon == 'x-circle' %}
+                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                     {% elif notification.icon == 'academic-cap' %}
+                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path>
+                                                     {% elif notification.icon == 'globe-alt' %}
+                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                                                     {% else %}
+                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                     {% endif %}
+                                                 </svg>
+                                             </div>
+                                             <div>
+                                                 <p class="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors drop-shadow-sm">{{ notification.title }}</p>
+                                                 <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">{{ notification.message }}</p>
+                                             </div>
+                                         </div>
+                                     </a>
+                                     {% empty %}
+                                     <div class="px-4 py-8 text-center text-slate-500">
+                                         <svg class="w-10 h-10 mx-auto text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                                         <p class="text-sm font-medium text-slate-600">All caught up!</p>
+                                         <p class="text-xs text-slate-400 mt-0.5">No relative notifications right now.</p>
+                                     </div>
+                                     {% endfor %}
+                                 </div>
+                            </div>
+                        </div>
 
                         <div class="relative" x-data="{ dropdownOpen: false }">
                             <button @click="dropdownOpen = !dropdownOpen" @click.away="dropdownOpen = false" class="flex items-center gap-2 hover:bg-slate-50 py-1.5 px-2.5 rounded-xl transition-colors border border-transparent hover:border-slate-200 focus:outline-none">
