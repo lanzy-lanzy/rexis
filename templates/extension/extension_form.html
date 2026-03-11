@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+
+{% block page_title %}{% if record %}Edit Extension Record{% else %}Create Extension Record{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-4 mb-10">
+    <div class="bg-white rounded-2xl shadow-card border border-slate-100 overflow-hidden relative">
+        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-500 to-amber-500"></div>
+        
+        <div class="p-6 md:p-8">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center flex-shrink-0">
+                    {% if record %}
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    {% else %}
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    {% endif %}
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">
+                        {% if record %}Edit Extension Record{% else %}Start New Extension{% endif %}
+                    </h1>
+                    <p class="text-slate-500 mt-1 font-medium text-sm">
+                        {% if record %}Update the details and progress of your extension activity.{% else %}Fill out the details below to initialize a new extension record.{% endif %}
+                    </p>
+                </div>
+            </div>
+            
+            <form method="post" enctype="multipart/form-data" class="space-y-8">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="bg-red-50 border-l-4 border-red-500 rounded-r-xl p-4 mb-6 shadow-sm">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-bold text-red-800">There were errors with your submission</h3>
+                            <div class="mt-2 text-sm text-red-700">
+                                {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Core Setup Section -->
+                <div class="bg-slate-50 rounded-xl p-6 border border-slate-100">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-200 pb-2">Core Identity</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-5">
+                        <!-- Proposal Selection -->
+                        <div class="bg-white rounded-lg p-2 border {% if form.proposal.errors %}border-red-300 ring-1 ring-red-300{% else %}border-slate-200 focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-orange-500{% endif %} transition-all shadow-sm">
+                            <label for="{{ form.proposal.id_for_label }}" class="block text-xs font-bold text-slate-500 uppercase px-2 pt-1 mb-1">
+                                {{ form.proposal.label }} <span class="text-red-500">*</span>
+                            </label>
+                            <select name="proposal" id="{{ form.proposal.id_for_label }}" class="w-full px-2 py-1.5 bg-transparent text-slate-800 font-medium text-sm border-0 focus:ring-0 cursor-pointer" required>
+                                <option value="">-- Select an approved proposal --</option>
+                                {% for value, label in form.proposal.field.choices %}
+                                    <option class="text-sm py-1" value="{{ value }}" {% if form.proposal.value == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if form.proposal.errors %}
+                            <p class="text-xs text-red-600 font-bold px-2 pb-1 mt-1">{{ form.proposal.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Extension Type -->
+                        <div class="bg-white rounded-lg p-2 border {% if form.extension_type.errors %}border-red-300 ring-1 ring-red-300{% else %}border-slate-200 focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-orange-500{% endif %} transition-all shadow-sm">
+                            <label for="{{ form.extension_type.id_for_label }}" class="block text-xs font-bold text-slate-500 uppercase px-2 pt-1 mb-1">
+                                {{ form.extension_type.label }} <span class="text-red-500">*</span>
+                            </label>
+                            <select name="extension_type" id="{{ form.extension_type.id_for_label }}" class="w-full px-2 py-1.5 bg-transparent text-slate-800 font-medium text-sm border-0 focus:ring-0 cursor-pointer" required>
+                                {% for value, label in form.extension_type.field.choices %}
+                                    <option class="text-sm py-1" value="{{ value }}" {% if form.extension_type.value == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if form.extension_type.errors %}
+                            <p class="text-xs text-red-600 font-bold px-2 pb-1 mt-1">{{ form.extension_type.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Title -->
+                    <div class="bg-white rounded-lg p-2 border {% if form.title.errors %}border-red-300 ring-1 ring-red-300{% else %}border-slate-200 focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-orange-500{% endif %} transition-all shadow-sm mb-5">
+                        <label for="{{ form.title.id_for_label }}" class="block text-xs font-bold text-slate-500 uppercase px-2 pt-1 mb-1">
+                            {{ form.title.label }} <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="title" id="{{ form.title.id_for_label }}" value="{{ form.title.value|default:'' }}" class="w-full px-2 py-1.5 bg-transparent text-slate-800 font-medium text-sm border-0 focus:ring-0" placeholder="e.g., Community Health Drive">
+                        {% if form.title.errors %}
+                        <p class="text-xs text-red-600 font-bold px-2 pb-1 mt-1">{{ form.title.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Team Members Selection -->
+                    <div class="bg-white rounded-lg p-2 border {% if form.team_members.errors %}border-red-300 ring-1 ring-red-300{% else %}border-slate-200 focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-orange-500{% endif %} transition-all shadow-sm">
+                        <label for="{{ form.team_members.id_for_label }}" class="block text-xs font-bold text-slate-500 uppercase px-2 pt-1 mb-1">
+                            {{ form.team_members.label }}
+                        </label>
+                        <select name="team_members" id="{{ form.team_members.id_for_label }}" multiple class="w-full px-2 py-1.5 bg-transparent text-slate-800 font-medium text-sm border-0 focus:ring-0 cursor-pointer min-h-[100px]">
+                            {% for value, label in form.team_members.field.choices %}
+                                <option class="text-sm py-1 border-b border-slate-50 last:border-0" value="{{ value }}" {% if value in form.team_members.value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="text-xs text-slate-400 font-medium px-2 pb-1 mt-1 flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Hold Ctrl/Cmd to select multiple members
+                        </p>
+                        {% if form.team_members.errors %}
+                        <p class="text-xs text-red-600 font-bold px-2 pb-1 mt-1">{{ form.team_members.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Logistics & Status -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Partner Community -->
+                    <div class="border {% if form.partner_community.errors %}border-red-300 bg-red-50/30 ring-1 ring-red-300{% else %}border-slate-200 bg-white focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-orange-500{% endif %} rounded-xl p-3 transition-all shadow-sm">
+                        <label for="{{ form.partner_community.id_for_label }}" class="block text-xs font-bold text-slate-500 uppercase px-1 mb-1 tracking-wider">
+                            {{ form.partner_community.label }} <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="partner_community" id="{{ form.partner_community.id_for_label }}" value="{{ form.partner_community.value|default:'' }}" class="w-full px-2 py-1 bg-transparent border-0 text-slate-800 font-semibold focus:ring-0 placeholder:text-slate-300 placeholder:font-normal" placeholder="Who is this with?" required>
+                        {% if form.partner_community.errors %}
+                        <p class="text-xs text-red-600 font-bold px-1 mt-1">{{ form.partner_community.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Location -->
+                    <div class="border {% if form.location.errors %}border-red-300 bg-red-50/30 ring-1 ring-red-300{% else %}border-slate-200 bg-white focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-orange-500{% endif %} rounded-xl p-3 transition-all shadow-sm flex flex-col justify-center text-sm">
+                        <label for="{{ form.location.id_for_label }}" class="block text-xs font-bold text-slate-500 uppercase px-1 mb-1 tracking-wider flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            {{ form.location.label }} <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="location" id="{{ form.location.id_for_label }}" value="{{ form.location.value|default:'' }}" class="w-full px-2 py-1 bg-transparent border-0 text-slate-800 font-semibold focus:ring-0 placeholder:text-slate-300 placeholder:font-normal" placeholder="Address or Zone" required>
+                        {% if form.location.errors %}
+                        <p class="text-xs text-red-600 font-bold px-1 mt-1">{{ form.location.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Status Selection -->
+                    <div class="md:col-span-1 border {% if form.status.errors %}border-red-300 bg-red-50/30 ring-1 ring-red-300{% else %}border-slate-200 bg-white focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-orange-500{% endif %} rounded-xl p-3 transition-all shadow-sm">
+                        <label for="{{ form.status.id_for_label }}" class="block text-xs font-bold text-slate-500 uppercase mb-1.5 px-1 tracking-wider">
+                            {{ form.status.label }} <span class="text-red-500">*</span>
+                        </label>
+                        <select name="status" id="{{ form.status.id_for_label }}" class="w-full px-2 py-2 bg-slate-50 border border-slate-200 text-slate-800 font-bold text-sm rounded-lg focus:ring-0 focus:border-orange-500 cursor-pointer transition-colors" required>
+                            {% for value, label in form.status.field.choices %}
+                                <option value="{{ value }}" {% if form.status.value == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.status.errors %}
+                        <p class="text-xs text-red-600 font-bold px-1 mt-2">{{ form.status.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Start Date -->
+                        <div class="border {% if form.start_date.errors %}border-red-300 bg-red-50/30 ring-1 ring-red-300{% else %}border-slate-200 bg-white focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-orange-500{% endif %} rounded-xl p-3 transition-all shadow-sm flex flex-col justify-center">
+                            <label for="{{ form.start_date.id_for_label }}" class="block text-xs font-bold text-slate-500 uppercase px-1 mb-1 tracking-wider flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v11a2 2 0 002 2z"></path></svg>
+                                {{ form.start_date.label }} <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" name="start_date" id="{{ form.start_date.id_for_label }}" value="{{ form.start_date.value }}" class="w-full px-2 py-1.5 bg-transparent border-0 text-slate-800 font-semibold focus:ring-0" required>
+                            {% if form.start_date.errors %}
+                            <p class="text-xs text-red-600 font-bold px-1 mt-1">{{ form.start_date.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- End Date -->
+                        <div class="border {% if form.end_date.errors %}border-red-300 bg-red-50/30 ring-1 ring-red-300{% else %}border-slate-200 bg-white focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-orange-500{% endif %} rounded-xl p-3 transition-all shadow-sm flex flex-col justify-center">
+                            <label for="{{ form.end_date.id_for_label }}" class="block text-xs font-bold text-slate-500 uppercase px-1 mb-1 tracking-wider flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                {{ form.end_date.label }}
+                            </label>
+                            <input type="date" name="end_date" id="{{ form.end_date.id_for_label }}" value="{{ form.end_date.value|default:'' }}" class="w-full px-2 py-1.5 bg-transparent border-0 text-slate-800 font-semibold focus:ring-0">
+                            {% if form.end_date.errors %}
+                            <p class="text-xs text-red-600 font-bold px-1 mt-1">{{ form.end_date.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metrics & Files -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-orange-50/40 rounded-xl p-6 border border-orange-100/60">
+                    <div class="col-span-full mb-2">
+                         <h3 class="text-xs font-bold text-orange-700/70 uppercase tracking-wider flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                            Metrics & Uploads
+                        </h3>
+                    </div>
+
+                    <!-- Beneficiary Count -->
+                    <div class="bg-white rounded-lg p-3 border {% if form.beneficiary_count.errors %}border-red-300 ring-1 ring-red-300{% else %}border-orange-100 focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-400/50{% endif %} transition-all shadow-sm self-start">
+                        <label for="{{ form.beneficiary_count.id_for_label }}" class="block text-xs font-bold text-slate-500 uppercase px-1 mb-1 tracking-wider">
+                            {{ form.beneficiary_count.label }}
+                        </label>
+                        <div class="flex items-center px-2">
+                            <svg class="w-4 h-4 text-slate-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                            <input type="number" name="beneficiary_count" id="{{ form.beneficiary_count.id_for_label }}" value="{{ form.beneficiary_count.value|default:'' }}" class="w-full py-1.5 bg-transparent border-0 text-slate-800 font-semibold focus:ring-0 placeholder:text-slate-300" placeholder="e.g., 50">
+                        </div>
+                        {% if form.beneficiary_count.errors %}
+                        <p class="text-xs text-red-600 font-bold px-1 mt-1">{{ form.beneficiary_count.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Documents -->
+                        <div class="bg-white rounded-lg p-3 border {% if form.output_documents.errors %}border-red-300 ring-1 ring-red-300{% else %}border-orange-100 focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-400/50{% endif %} transition-all shadow-sm">
+                            <label for="{{ form.output_documents.id_for_label }}" class="block text-xs font-bold text-slate-500 uppercase px-1 mb-1 tracking-wider">
+                                {{ form.output_documents.label }}
+                            </label>
+                            <input type="file" name="output_documents" id="{{ form.output_documents.id_for_label }}" class="w-full text-sm text-slate-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                            {% if form.output_documents.errors %}
+                            <p class="text-xs text-red-600 font-bold px-1 mt-1">{{ form.output_documents.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                         <!-- Photos -->
+                        <div class="bg-white rounded-lg p-3 border {% if form.photos.errors %}border-red-300 ring-1 ring-red-300{% else %}border-orange-100 focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-400/50{% endif %} transition-all shadow-sm">
+                            <label for="{{ form.photos.id_for_label }}" class="block text-xs font-bold text-slate-500 uppercase px-1 mb-1 tracking-wider">
+                                {{ form.photos.label }}
+                            </label>
+                            <input type="file" name="photos" id="{{ form.photos.id_for_label }}" class="w-full text-sm text-slate-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 cursor-pointer">
+                            {% if form.photos.errors %}
+                            <p class="text-xs text-red-600 font-bold px-1 mt-1">{{ form.photos.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Description Section -->
+                <div class="bg-white border {% if form.description.errors %}border-red-300 ring-1 ring-red-300 bg-red-50/30{% else %}border-slate-200 focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-orange-500{% endif %} rounded-xl p-4 transition-all shadow-sm">
+                    <label for="{{ form.description.id_for_label }}" class="block text-xs font-bold text-slate-500 uppercase px-1 mb-2 tracking-wider">
+                        {{ form.description.label }} <span class="text-red-500">*</span>
+                    </label>
+                    <textarea name="description" id="{{ form.description.id_for_label }}" rows="5" class="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 text-sm focus:ring-0 focus:bg-white transition-colors" placeholder="Provide a detailed description of the extension program...">{{ form.description.value|default:'' }}</textarea>
+                    {% if form.description.errors %}
+                    <p class="text-xs text-red-600 font-bold px-1 mt-2">{{ form.description.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="pt-8 mt-8 border-t border-slate-100 flex flex-col-reverse sm:flex-row gap-4 sm:justify-end">
+                    <a href="{% url 'extension_list' %}" class="inline-flex justify-center items-center px-6 py-2.5 border border-slate-300 shadow-sm text-sm font-bold rounded-xl text-slate-700 bg-white hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-all">
+                        Cancel
+                    </a>
+                    <button type="submit" class="inline-flex justify-center items-center px-8 py-2.5 border border-transparent shadow-md text-sm font-bold rounded-xl text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all transform hover:-translate-y-0.5">
+                        {% if record %}
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Save Changes
+                        {% else %}
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Create Extension
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

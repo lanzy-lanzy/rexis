@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Research Record Details{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto mt-4 mb-10">
+    <div class="bg-white rounded-2xl shadow-card border border-slate-100 overflow-hidden relative">
+        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+        
+        <div class="p-6 md:p-8">
+            <!-- Header & Actions -->
+            <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold uppercase tracking-wide border
+                            {% if record.status == 'ONGOING' %}bg-blue-50 text-blue-700 border-blue-200
+                            {% elif record.status == 'COMPLETED' %}bg-emerald-50 text-emerald-700 border-emerald-200
+                            {% elif record.status == 'PUBLISHED' %}bg-purple-50 text-purple-700 border-purple-200
+                            {% elif record.status == 'SUSPENDED' %}bg-red-50 text-red-700 border-red-200
+                            {% else %}bg-slate-100 text-slate-700 border-slate-200{% endif %}">
+                            {{ record.get_status_display }}
+                        </span>
+                        <span class="text-sm font-semibold text-slate-400 flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v11a2 2 0 002 2z"></path></svg>
+                            Started {{ record.start_date|date:"F j, Y" }}
+                        </span>
+                    </div>
+                    <h1 class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight leading-tight">
+                        {{ record.proposal.title }}
+                    </h1>
+                </div>
+                
+                <div class="flex flex-wrap gap-3">
+                    <a href="{% url 'research_list' %}" class="inline-flex items-center px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all focus:ring-2 focus:ring-slate-200">
+                        <svg class="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        Back
+                    </a>
+                    
+                    {% if user == record.lead_researcher or user.is_admin %}
+                    <a href="{% url 'research_edit' record.pk %}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-bold rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-sm transition-all focus:ring-2 focus:ring-blue-500/50">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        Edit Record
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Main Content Column -->
+                <div class="lg:col-span-2 space-y-8">
+                    
+                    <!-- Output/Findings Section -->
+                    <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100">
+                        <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            Research Findings & Output
+                        </h3>
+                        <div class="prose prose-sm prose-slate max-w-none">
+                            {% if record.output_description %}
+                                <p class="text-slate-600 leading-relaxed whitespace-pre-line">{{ record.output_description }}</p>
+                            {% else %}
+                                <p class="text-slate-400 italic">No output description provided yet.</p>
+                            {% endif %}
+                        </div>
+
+                        {% if record.publication_link %}
+                        <div class="mt-6 pt-6 border-t border-slate-200/60">
+                            <a href="{{ record.publication_link }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center p-3 w-full sm:w-auto bg-purple-50 text-purple-700 rounded-xl hover:bg-purple-100 border border-purple-100 transition-colors group">
+                                <div class="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center mr-3 group-hover:scale-105 transition-transform">
+                                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-purple-500 uppercase tracking-wide">External Link</p>
+                                    <p class="text-sm font-semibold truncate max-w-[200px] sm:max-w-xs">{{ record.publication_link }}</p>
+                                </div>
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Original Proposal Section -->
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800 mb-4 px-1">Original Proposal Context</h3>
+                        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                            <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Abstract</p>
+                                <p class="text-sm text-slate-600">{{ record.proposal.abstract }}</p>
+                            </div>
+                            
+                            {% if record.proposal.proposal_document %}
+                            <div class="p-4 bg-white flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-red-50 text-red-600 rounded-lg">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-slate-700">Proposal Document</p>
+                                        <p class="text-xs text-slate-500">Read the original submission</p>
+                                    </div>
+                                </div>
+                                <a href="{{ record.proposal.proposal_document.url }}" target="_blank" class="px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                                    View PDF
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Sidebar Column -->
+                <div class="space-y-6">
+                    
+                    <!-- Team Card -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Research Team</h3>
+                        
+                        <div class="space-y-4">
+                            <!-- Lead -->
+                            <div>
+                                <p class="text-[10px] uppercase font-bold text-blue-500 tracking-wider mb-2">Lead Researcher</p>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold border border-blue-200 shadow-sm">
+                                        {{ record.lead_researcher.first_name|make_list|first|default:record.lead_researcher.username|make_list|first|upper }}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">{{ record.lead_researcher.get_full_name|default:record.lead_researcher.username }}</p>
+                                        <p class="text-xs text-slate-500">{{ record.lead_researcher.email|default:"No email" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Co-researchers -->
+                            {% if record.co_researchers.exists %}
+                            <div class="pt-4 border-t border-slate-100">
+                                <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-3">Co-Researchers</p>
+                                <div class="space-y-3">
+                                    {% for member in record.co_researchers.all %}
+                                    <div class="flex items-center gap-2.5 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                                        <div class="w-7 h-7 rounded-md bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold">
+                                            {{ member.first_name|make_list|first|default:member.username|make_list|first|upper }}
+                                        </div>
+                                        <p class="text-xs font-bold text-slate-700">{{ member.get_full_name|default:member.username }}</p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Timeline Card -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Timeline</h3>
+                        
+                        <div class="relative pl-6 space-y-5 before:absolute before:inset-0 before:ml-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
+                            <!-- Start -->
+                            <div class="relative">
+                                <div class="absolute -left-6 bg-white w-5 h-5 rounded-full border-4 border-slate-200 flex items-center justify-center -translate-x-1.5 mt-0.5"></div>
+                                <p class="text-xs font-bold text-slate-500">Start Date</p>
+                                <p class="text-sm font-semibold text-slate-800">{{ record.start_date|date:"F j, Y" }}</p>
+                            </div>
+                            
+                            <!-- End -->
+                            <div class="relative">
+                                {% if record.end_date %}
+                                    <div class="absolute -left-6 bg-white w-5 h-5 rounded-full border-4 border-emerald-400 flex items-center justify-center -translate-x-1.5 mt-0.5"></div>
+                                    <p class="text-xs font-bold text-slate-500">End Date</p>
+                                    <p class="text-sm font-semibold text-slate-800">{{ record.end_date|date:"F j, Y" }}</p>
+                                {% else %}
+                                    <div class="absolute -left-6 bg-white w-5 h-5 rounded-full border-4 border-blue-400 border-dashed flex items-center justify-center -translate-x-1.5 mt-0.5"></div>
+                                    <p class="text-xs font-bold text-slate-500">Expected End Date</p>
+                                    <p class="text-sm font-medium text-slate-400 italic">Not set (Ongoing)</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financials Card -->
+                    {% if record.funding_source or record.funding_amount %}
+                    <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+                        <h3 class="text-xs font-bold text-emerald-700/70 uppercase tracking-widest mb-4 flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Financial Support
+                        </h3>
+                        
+                        <div class="space-y-3">
+                            {% if record.funding_amount %}
+                            <div class="bg-white/60 p-3 rounded-xl border border-emerald-200/50">
+                                <p class="text-[10px] uppercase font-bold text-emerald-600 tracking-wider mb-1">Total Grant</p>
+                                <p class="text-2xl font-black text-emerald-800 tracking-tight">${{ record.funding_amount }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if record.funding_source %}
+                            <div class="px-1">
+                                <p class="text-[10px] uppercase font-bold text-emerald-600 tracking-wider mb-0.5">Sponsor / Source</p>
+                                <p class="text-sm font-semibold text-emerald-900">{{ record.funding_source }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

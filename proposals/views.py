@@ -20,7 +20,9 @@ def proposal_list(request: HttpRequest) -> HttpResponse:
         proposals = proposals.filter(faculty_author=user)
     elif user.is_research_staff:
         proposals = proposals.filter(
-            Q(faculty_author=user) | Q(research_staff=user)
+            Q(faculty_author=user) | 
+            Q(research_staff=user) |
+            Q(status=ProposalStatus.APPROVED)
         )
     elif user.is_extension_staff:
         proposals = proposals.filter(proposal_type=ProposalType.EXTENSION)
