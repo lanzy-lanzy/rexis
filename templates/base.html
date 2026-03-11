@@ -8,20 +8,27 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script defer src="https://unpkg.com/alpinejs@3.13.3"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], },
                     colors: {
-                        primary: '#1e40af',
+                        primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
                         secondary: '#64748b',
-                    }
+                    },
+                    boxShadow: { 'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)', 'card': '0 1px 3px rgba(0,0,0,0.02)' }
                 }
             }
         }
     </script>
-    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body class="bg-gray-50" x-data="{ sidebarOpen: false }">
@@ -29,32 +36,37 @@
     <div class="flex h-screen">
         <!-- Sidebar -->
         <aside 
-            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-            class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0"
+            :class="sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'"
+            class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-100 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:shadow-sm flex flex-col"
         >
-            <div class="flex items-center justify-center h-16 border-b border-gray-200">
-                <h1 class="text-xl font-bold text-primary">REXIS</h1>
+            <div class="flex items-center justify-between lg:justify-center h-16 px-6 lg:px-0 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-md">
+                        <span class="text-white font-bold text-lg">R</span>
+                    </div>
+                    <h1 class="text-xl font-bold text-slate-900 tracking-tight">REXIS</h1>
+                </div>
             </div>
             
-            <nav class="mt-6 px-4">
+            <nav class="flex-1 mt-6 px-4 space-y-1">
                 {% block sidebar %}
-                <a href="{% url 'dashboard' %}" class="flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100 {% if request.resolver_match.url_name == 'dashboard' %}bg-blue-50 text-primary{% endif %}">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="{% url 'dashboard' %}" class="flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 group {% if request.resolver_match.url_name == 'dashboard' %}bg-blue-600 text-white shadow-md font-medium{% else %}text-slate-600 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+                    <svg class="w-5 h-5 mr-3 transition-colors {% if request.resolver_match.url_name == 'dashboard' %}text-white{% else %}text-slate-400 group-hover:text-blue-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                     </svg>
                     Dashboard
                 </a>
                 
-                <a href="{% url 'proposal_list' %}" class="flex items-center px-4 py-2 mt-2 text-gray-700 rounded-lg hover:bg-gray-100 {% if 'proposal' in request.resolver_match.url_name %}bg-blue-50 text-primary{% endif %}">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="{% url 'proposal_list' %}" class="flex items-center px-3 py-2.5 mt-1 rounded-xl transition-all duration-200 group {% if 'proposal' in request.resolver_match.url_name %}bg-blue-600 text-white shadow-md font-medium{% else %}text-slate-600 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+                    <svg class="w-5 h-5 mr-3 transition-colors {% if 'proposal' in request.resolver_match.url_name %}text-white{% else %}text-slate-400 group-hover:text-blue-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                     Proposals
                 </a>
                 
                 {% if user.is_research_staff or user.is_admin or user.is_faculty %}
-                <a href="{% url 'research_list' %}" class="flex items-center px-4 py-2 mt-2 text-gray-700 rounded-lg hover:bg-gray-100 {% if 'research' in request.resolver_match.url_name %}bg-blue-50 text-primary{% endif %}">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="{% url 'research_list' %}" class="flex items-center px-3 py-2.5 mt-1 rounded-xl transition-all duration-200 group {% if 'research' in request.resolver_match.url_name %}bg-blue-600 text-white shadow-md font-medium{% else %}text-slate-600 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+                    <svg class="w-5 h-5 mr-3 transition-colors {% if 'research' in request.resolver_match.url_name %}text-white{% else %}text-slate-400 group-hover:text-blue-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-22M9 -2h-5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                     </svg>
                     Research
@@ -62,8 +74,8 @@
                 {% endif %}
                 
                 {% if user.is_extension_staff or user.is_admin or user.is_faculty %}
-                <a href="{% url 'extension_list' %}" class="flex items-center px-4 py-2 mt-2 text-gray-700 rounded-lg hover:bg-gray-100 {% if 'extension' in request.resolver_match.url_name %}bg-blue-50 text-primary{% endif %}">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="{% url 'extension_list' %}" class="flex items-center px-3 py-2.5 mt-1 rounded-xl transition-all duration-200 group {% if 'extension' in request.resolver_match.url_name %}bg-blue-600 text-white shadow-md font-medium{% else %}text-slate-600 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+                    <svg class="w-5 h-5 mr-3 transition-colors {% if 'extension' in request.resolver_match.url_name %}text-white{% else %}text-slate-400 group-hover:text-blue-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                     </svg>
                     Extension
@@ -71,8 +83,11 @@
                 {% endif %}
                 
                 {% if user.is_admin %}
-                <a href="{% url 'user_management' %}" class="flex items-center px-4 py-2 mt-2 text-gray-700 rounded-lg hover:bg-gray-100 {% if 'user' in request.resolver_match.url_name %}bg-blue-50 text-primary{% endif %}">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="pt-4 pb-2">
+                    <h3 class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">System</h3>
+                </div>
+                <a href="{% url 'user_management' %}" class="flex items-center px-3 py-2.5 mt-1 rounded-xl transition-all duration-200 group {% if 'user' in request.resolver_match.url_name %}bg-blue-600 text-white shadow-md font-medium{% else %}text-slate-600 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+                    <svg class="w-5 h-5 mr-3 transition-colors {% if 'user' in request.resolver_match.url_name %}text-white{% else %}text-slate-400 group-hover:text-blue-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                     </svg>
                     Users
@@ -82,36 +97,70 @@
             </nav>
         </aside>
         
+        <!-- Mobile Overlay -->
+        <div x-cloak x-show="sidebarOpen" @click="sidebarOpen = false" x-transition.opacity class="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden"></div>
+
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="flex-1 flex flex-col min-w-0">
             <!-- Top Bar -->
-            <header class="bg-white border-b border-gray-200">
-                <div class="flex items-center justify-between px-6 py-4">
-                    <div class="flex items-center">
-                        <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden text-gray-500 hover:text-gray-700">
+            <header class="bg-white/80 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-30 h-16 flex flex-col justify-center">
+                <div class="flex items-center justify-between px-4 sm:px-6">
+                    <div class="flex items-center gap-3">
+                        <button @click="sidebarOpen = true" class="lg:hidden p-2 -ml-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                             </svg>
                         </button>
-                        <h2 class="ml-4 lg:ml-0 text-lg font-semibold text-gray-800">{% block page_title %}Dashboard{% endblock %}</h2>
+                        <h2 class="text-xl font-semibold text-slate-800 tracking-tight hidden sm:block leading-none">{% block page_title %}Dashboard{% endblock %}</h2>
                     </div>
                     
-                    <div class="flex items-center space-x-4" x-data="{ dropdownOpen: false }">
-                        <div class="relative">
-                            <button @click="dropdownOpen = !dropdownOpen" class="flex items-center text-gray-700 hover:text-gray-900">
-                                <span class="mr-2">{{ user.get_full_name|default:user.username }}</span>
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center gap-4">
+                        <!-- Notifications -->
+                        <button class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors relative focus:outline-none">
+                            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full border-2 border-white"></span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                        </button>
+
+                        <div class="relative" x-data="{ dropdownOpen: false }">
+                            <button @click="dropdownOpen = !dropdownOpen" @click.away="dropdownOpen = false" class="flex items-center gap-2 hover:bg-slate-50 py-1.5 px-2.5 rounded-xl transition-colors border border-transparent hover:border-slate-200 focus:outline-none">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center flex-shrink-0">
+                                    {{ user.get_full_name|default:user.username|make_list|first|upper }}
+                                </div>
+                                <div class="hidden md:flex flex-col items-start overflow-hidden text-left pl-1">
+                                    <span class="text-sm font-semibold text-slate-700 truncate max-w-[120px]">{{ user.get_full_name|default:user.username }}</span>
+                                    <span class="text-xs text-slate-500 font-medium">{{ user.get_role_display|default:'User' }}</span>
+                                </div>
+                                <svg class="w-4 h-4 text-slate-400 hidden sm:block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
                             </button>
                             
-                            <div x-show="dropdownOpen" @click="dropdownOpen = false" class="fixed inset-0 z-10"></div>
-                            <div x-show="dropdownOpen" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-20" style="display: none;">
-                                <div class="px-4 py-2 border-b border-gray-100">
-                                    <p class="text-sm text-gray-500">{{ user.get_role_display }}</p>
+                            <!-- Dropdown Menu -->
+                            <div x-cloak x-show="dropdownOpen" 
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="transform opacity-0 scale-95"
+                                 x-transition:enter-end="transform opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="transform opacity-100 scale-100"
+                                 x-transition:leave-end="transform opacity-0 scale-95"
+                                 class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-soft border border-slate-100 py-1.5 z-50">
+                                
+                                <div class="px-4 py-3 border-b border-slate-100 md:hidden">
+                                    <p class="text-sm font-semibold text-slate-800">{{ user.get_full_name|default:user.username }}</p>
+                                    <p class="text-xs text-slate-500 font-medium mt-0.5">{{ user.get_role_display|default:'User' }}</p>
                                 </div>
-                                <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</a>
-                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-red-600 hover:bg-gray-100">Logout</a>
+                                
+                                <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                                    <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                    My Profile
+                                </a>
+                                <div class="h-px bg-slate-100 my-1"></div>
+                                <a href="{% url 'logout' %}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
+                                    <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                    Sign out
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -119,24 +168,49 @@
             </header>
             
             <!-- Content -->
-            <main class="flex-1 overflow-y-auto p-6">
-                {% if messages %}
-                    <div class="mb-4">
-                        {% for message in messages %}
-                        <div class="p-4 mb-2 rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-700{% elif message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-blue-100 text-blue-700{% endif %}">
-                            {{ message }}
+            <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8">
+                <div class="max-w-7xl mx-auto">
+                    {% if messages %}
+                        <div class="mb-6 space-y-3">
+                            {% for message in messages %}
+                            <div class="flex items-center gap-3 p-4 rounded-xl border-l-4 shadow-sm 
+                                {% if message.tags == 'error' %}bg-red-50 border-red-500 text-red-800
+                                {% elif message.tags == 'success' %}bg-emerald-50 border-emerald-500 text-emerald-800
+                                {% elif message.tags == 'warning' %}bg-amber-50 border-amber-500 text-amber-800
+                                {% else %}bg-blue-50 border-blue-500 text-blue-800{% endif %}"
+                                x-data="{ visible: true }" x-show="visible" x-transition.duration.300ms>
+                                <div class="flex-shrink-0">
+                                    {% if message.tags == 'error' %}
+                                        <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+                                    {% elif message.tags == 'success' %}
+                                        <svg class="h-5 w-5 text-emerald-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                                    {% else %}
+                                        <svg class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-1 text-sm font-medium">{{ message }}</div>
+                                <button @click="visible = false" class="inline-flex flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity focus:outline-none">
+                                    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                </button>
+                            </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
+                    {% endif %}
+                    
+                    <div class="sm:hidden mb-4">
+                        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">{% block page_title_mobile %}{% endblock %}</h2>
                     </div>
-                {% endif %}
-                
-                {% block content %}{% endblock %}
+                    
+                    {% block content %}{% endblock %}
+                </div>
             </main>
         </div>
     </div>
     {% else %}
-    <!-- Login Page -->
-    {% block login_content %}{% endblock %}
+    <!-- Login Page layout structure adjusted for consistency -->
+    <div class="min-h-screen flex flex-col justify-center bg-slate-50">
+        {% block login_content %}{% endblock %}
+    </div>
     {% endif %}
     
     {% block extra_js %}{% endblock %}

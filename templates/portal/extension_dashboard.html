@@ -3,91 +3,108 @@
 {% block page_title %}Extension Staff Dashboard{% endblock %}
 
 {% block content %}
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center justify-between">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8 mt-2">
+    <!-- Card 1: My Extension Activities -->
+    <div class="bg-white rounded-2xl shadow-card hover:shadow-soft transition-all duration-300 p-6 border border-slate-100 relative overflow-hidden group">
+        <div class="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-purple-50/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-r-2xl"></div>
+        <div class="flex items-center justify-between relative z-10">
             <div>
-                <p class="text-sm text-gray-500">My Extension Activities</p>
-                <p class="text-2xl font-bold text-gray-800">{{ total_extension }}</p>
+                <p class="text-sm font-semibold text-slate-500 mb-1 uppercase tracking-wide">My Activities</p>
+                <div class="flex items-baseline gap-2">
+                    <p class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ total_extension }}</p>
+                </div>
             </div>
-            <div class="bg-purple-100 rounded-full p-3">
-                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                </svg>
+            <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-purple-100 to-purple-50 flex items-center justify-center border border-purple-100/50 text-purple-600 shadow-sm group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             </div>
         </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center justify-between">
+    <!-- Card 2: Planning -->
+    <div class="bg-white rounded-2xl shadow-card hover:shadow-soft transition-all duration-300 p-6 border border-slate-100 relative overflow-hidden group">
+        <div class="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-amber-50/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-r-2xl"></div>
+        <div class="flex items-center justify-between relative z-10">
             <div>
-                <p class="text-sm text-gray-500">Planning</p>
-                <p class="text-2xl font-bold text-yellow-600">{{ planning_extension }}</p>
+                <p class="text-sm font-semibold text-slate-500 mb-1 uppercase tracking-wide">Planning</p>
+                <p class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ planning_extension }}</p>
             </div>
-            <div class="bg-yellow-100 rounded-full p-3">
-                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
+            <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center border border-amber-100/50 text-amber-600 shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
         </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center justify-between">
+    <!-- Card 3: Completed -->
+    <div class="bg-white rounded-2xl shadow-card hover:shadow-soft transition-all duration-300 p-6 border border-slate-100 relative overflow-hidden group">
+        <div class="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-emerald-50/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-r-2xl"></div>
+        <div class="flex items-center justify-between relative z-10">
             <div>
-                <p class="text-sm text-gray-500">Completed</p>
-                <p class="text-2xl font-bold text-green-600">{{ completed_extension }}</p>
+                <p class="text-sm font-semibold text-slate-500 mb-1 uppercase tracking-wide">Completed</p>
+                <p class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ completed_extension }}</p>
             </div>
-            <div class="bg-green-100 rounded-full p-3">
-                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
+            <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center border border-emerald-100/50 text-emerald-600 shadow-sm group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
         </div>
     </div>
 </div>
 
-<div class="bg-white rounded-lg shadow p-6">
-    <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold">My Extension Activities</h3>
-        <a href="{% url 'extension_create' %}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-800 transition">
-            New Extension Activity
+<!-- My Extension Activities Table -->
+<div class="bg-white rounded-2xl shadow-card border border-slate-100 flex flex-col h-full overflow-hidden">
+    <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-white">
+        <h3 class="text-lg font-bold text-slate-800">My Extension Activities</h3>
+        <a href="{% url 'extension_create' %}" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 shadow-sm hover:shadow transition-all focus:ring-2 focus:ring-blue-500/50">
+            New Activity
         </a>
     </div>
     
     <div class="overflow-x-auto">
-        <table class="w-full">
+        <table class="w-full text-left border-collapse">
             <thead>
-                <tr class="border-b border-gray-200">
-                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Title</th>
-                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Type</th>
-                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
-                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Beneficiaries</th>
-                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Actions</th>
+                <tr class="bg-slate-50/50 border-b border-slate-100 text-xs uppercase tracking-wider text-slate-500 font-semibold">
+                    <th class="py-4 px-6">Title</th>
+                    <th class="py-4 px-6">Type</th>
+                    <th class="py-4 px-6">Status</th>
+                    <th class="py-4 px-6">Beneficiaries</th>
+                    <th class="py-4 px-6 text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-slate-100">
                 {% for ext in my_extension %}
-                <tr class="border-b border-gray-100 hover:bg-gray-50">
-                    <td class="py-3 px-4">{{ ext.title }}</td>
-                    <td class="py-3 px-4">{{ ext.get_extension_type_display }}</td>
-                    <td class="py-3 px-4">
-                        <span class="px-2 py-1 text-xs rounded-full 
-                            {% if ext.status == 'PLANNING' %}bg-yellow-100 text-yellow-800
-                            {% elif ext.status == 'ONGOING' %}bg-blue-100 text-blue-800
-                            {% elif ext.status == 'COMPLETED' %}bg-green-100 text-green-800
-                            {% else %}bg-red-100 text-red-800{% endif %}">
+                <tr class="hover:bg-slate-50 transition-colors group">
+                    <td class="py-4 px-6">
+                        <p class="font-bold text-slate-800 text-sm group-hover:text-blue-600 transition-colors">{{ ext.title }}</p>
+                    </td>
+                    <td class="py-4 px-6">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
+                            {{ ext.get_extension_type_display }}
+                        </span>
+                    </td>
+                    <td class="py-4 px-6">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider
+                            {% if ext.status == 'PLANNING' %}bg-amber-50 text-amber-700 border border-amber-200
+                            {% elif ext.status == 'ONGOING' %}bg-blue-50 text-blue-700 border border-blue-200
+                            {% elif ext.status == 'COMPLETED' %}bg-emerald-50 text-emerald-700 border border-emerald-200
+                            {% else %}bg-red-50 text-red-700 border border-red-200{% endif %}">
                             {{ ext.get_status_display }}
                         </span>
                     </td>
-                    <td class="py-3 px-4">{{ ext.beneficiary_count }}</td>
-                    <td class="py-3 px-4">
-                        <a href="{% url 'extension_detail' ext.pk %}" class="text-primary hover:text-blue-800">View</a>
+                    <td class="py-4 px-6 text-slate-500 font-medium text-sm">{{ ext.beneficiary_count }}</td>
+                    <td class="py-4 px-6 text-right">
+                        <a href="{% url 'extension_detail' ext.pk %}" class="inline-flex items-center justify-center p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40">
+                            <span class="sr-only">View</span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        </a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="py-8 text-center text-gray-500">No extension activities yet.</td>
+                    <td colspan="5" class="py-12 text-center">
+                        <div class="mx-auto w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                            <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        </div>
+                        <p class="text-slate-500 font-medium">No extension activities yet.</p>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

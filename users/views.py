@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.utils.decorators import method_decorator
 
 from .models import CustomUser, UserRole
-from .forms import CustomUserCreationForm, CustomUserChangeForm
+from .forms import CustomUserCreationForm, CustomUserChangeForm, FrontendUserChangeForm
 
 
 def login_view(request: HttpRequest) -> HttpResponse:
@@ -66,13 +66,13 @@ def user_edit(request: HttpRequest, pk: int) -> HttpResponse:
     
     user = get_object_or_404(CustomUser, pk=pk)
     if request.method == 'POST':
-        form = CustomUserChangeForm(request.POST, instance=user)
+        form = FrontendUserChangeForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
             messages.success(request, f'User {user.username} updated successfully.')
             return redirect('user_management')
     else:
-        form = CustomUserChangeForm(instance=user)
+        form = FrontendUserChangeForm(instance=user)
     return render(request, 'users/user_form.html', {'form': form, 'user_obj': user})
 
 
