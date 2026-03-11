@@ -61,3 +61,29 @@ class Proposal(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ProposalDocumentVersion(models.Model):
+    proposal = models.ForeignKey(
+        Proposal,
+        on_delete=models.CASCADE,
+        related_name='document_versions'
+    )
+    document = models.FileField(upload_to='proposals/documents/versions/')
+    version_number = models.PositiveIntegerField(default=1)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    version_notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-version_number']
+        verbose_name = 'Proposal Document Version'
+        verbose_name_plural = 'Proposal Document Versions'
+
+    def __str__(self):
+        return f"{self.proposal.title} - v{self.version_number}"

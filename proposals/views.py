@@ -6,7 +6,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.utils import timezone
 
-from .models import Proposal, ProposalStatus, ProposalType
+from .models import Proposal, ProposalStatus, ProposalType, ProposalDocumentVersion
 from .forms import ProposalForm, ProposalReviewForm
 from users.models import UserRole
 
@@ -68,6 +68,17 @@ def proposal_create(request: HttpRequest) -> HttpResponse:
             proposal = form.save(commit=False)
             proposal.faculty_author = request.user
             proposal.save()
+            
+            # Create initial document version if a document was uploaded
+            if 'proposal_document' in request.FILES:
+                ProposalDocumentVersion.objects.create(
+                    proposal=proposal,
+                    document=request.FILES['proposal_document'],
+                    version_number=1,
+                    uploaded_by=request.user,
+                    version_notes="Initial submission."
+                )
+                
             messages.success(request, 'Proposal submitted successfully!')
             if request.htmx:
                 return render(request, 'proposals/partials/proposal_success.html', {'proposal': proposal})
@@ -85,11 +96,17 @@ def proposal_create(request: HttpRequest) -> HttpResponse:
 def proposal_detail(request: HttpRequest, pk: int) -> HttpResponse:
     proposal = get_object_or_404(Proposal, pk=pk)
     user = request.user
+    document_versions = proposal.document_versions.order_by('-version_number')
+
+    context = {
+        'proposal': proposal,
+        'document_versions': document_versions,
+    }
 
     if user.is_research_staff:
-        return render(request, 'proposals/proposal_research_detail.html', {'proposal': proposal})
+        return render(request, 'proposals/proposal_research_detail.html', context)
 
-    return render(request, 'proposals/proposal_detail.html', {'proposal': proposal})
+    return render(request, 'proposals/proposal_detail.html', context)
 
 
 @login_required
@@ -107,7 +124,20 @@ def proposal_edit(request: HttpRequest, pk: int) -> HttpResponse:
     if request.method == 'POST':
         form = ProposalForm(request.POST, request.FILES, instance=proposal)
         if form.is_valid():
-            form.save()
+            proposal = form.save()
+            
+            # Create a new version if a new document was explicitly uploaded
+            if 'proposal_document' in request.FILES:
+                latest_version = proposal.document_versions.order_by('-version_number').first()
+                next_version_num = (latest_version.version_number + 1) if latest_version else 1
+                ProposalDocumentVersion.objects.create(
+                    proposal=proposal,
+                    document=request.FILES['proposal_document'],
+                    version_number=next_version_num,
+                    uploaded_by=request.user,
+                    version_notes="Updated document via proposal edit."
+                )
+
             messages.success(request, 'Proposal updated successfully!')
             return redirect('proposal_detail', pk=proposal.pk)
     else:

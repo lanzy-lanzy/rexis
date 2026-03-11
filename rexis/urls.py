@@ -9,6 +9,7 @@ from django.views.generic import RedirectView
 
 from portal.views import home
 from users.views import login_view, logout_view
+from core.views import global_search
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -20,6 +21,7 @@ urlpatterns = [
     path('research/', include('research.urls')),
     path('extension/', include('extension.urls')),
     path('users/', include('users.urls')),
+    path('search/', global_search, name='global_search'),
 ]
 
 if settings.DEBUG:

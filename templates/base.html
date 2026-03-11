@@ -111,10 +111,32 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                             </svg>
                         </button>
-                        <h2 class="text-xl font-semibold text-slate-800 tracking-tight hidden sm:block leading-none">{% block page_title %}Dashboard{% endblock %}</h2>
+                        <h2 class="text-xl font-semibold text-slate-800 tracking-tight hidden lg:block leading-none">{% block page_title %}Dashboard{% endblock %}</h2>
+                        
+                        <!-- Global Search Bar -->
+                        <div class="hidden md:flex flex-1 max-w-md ml-4">
+                            <form action="{% url 'global_search' %}" method="GET" class="w-full relative group">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </div>
+                                <input type="text" name="q" placeholder="Search proposals, research, users..." 
+                                       class="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl bg-slate-50/50 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all">
+                            </form>
+                        </div>
                     </div>
                     
                     <div class="flex items-center gap-4">
+                        <!-- Search -->
+                        <form action="{% url 'global_search' %}" method="get" class="hidden md:block">
+                            <div class="relative">
+                                <input type="text" name="q" placeholder="Search..." value="{{ request.GET.q|default:'' }}"
+                                    class="w-48 lg:w-64 pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:bg-white focus:border-blue-300 transition-all">
+                                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                        </form>
+                        
                         <!-- Notifications -->
                         <div class="relative" x-data="{ notifyOpen: false }">
                             <button @click="notifyOpen = !notifyOpen" @click.away="notifyOpen = false" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors relative focus:outline-none">

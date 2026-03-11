@@ -43,31 +43,78 @@
             <h2 class="text-lg font-semibold mb-2">Documents</h2>
             <div class="flex flex-wrap gap-4">
                 {% if proposal.proposal_document %}
-                <a href="{{ proposal.proposal_document.url }}" class="flex items-center px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+                <div x-data @click="$dispatch('open-pdf-preview', { url: '{{ proposal.proposal_document.url }}', title: 'Proposal Document' })"
+                     class="flex items-center px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                     </svg>
-                    Proposal Document
-                </a>
+                    Preview Document
+                </div>
                 {% endif %}
                 
                 {% if proposal.budget_pdf %}
-                <a href="{{ proposal.budget_pdf.url }}" class="flex items-center px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+                <div x-data @click="$dispatch('open-pdf-preview', { url: '{{ proposal.budget_pdf.url }}', title: 'Budget PDF' })"
+                     class="flex items-center px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2 2 2V5a0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                     </svg>
-                    Budget PDF
-                </a>
+                    Preview Budget
+                </div>
                 {% endif %}
                 
                 {% if proposal.supporting_image %}
-                <a href="{{ proposal.supporting_image.url }}" class="flex items-center px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+                <a href="{{ proposal.supporting_image.url }}" target="_blank" class="flex items-center px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
                     Supporting Image
                 </a>
                 {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Document Version History -->
+        {% if document_versions %}
+        <div class="mb-6">
+            <h2 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Version History
+                <span class="ml-1 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full">{{ document_versions|length }}</span>
+            </h2>
+            <div class="space-y-2">
+                {% for version in document_versions %}
+                <div x-data class="flex items-center gap-3 p-3 border rounded-lg hover:shadow-sm transition-all
+                    {% if forloop.first %}border-indigo-300 bg-indigo-50/30{% else %}border-gray-200 bg-white{% endif %}">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs
+                        {% if forloop.first %}bg-indigo-600 text-white{% else %}bg-gray-100 text-gray-500{% endif %}">
+                        v{{ version.version_number }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <p class="font-medium text-gray-800 text-sm truncate">{{ version.version_notes|default:"Document uploaded" }}</p>
+                            {% if forloop.first %}<span class="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold uppercase rounded">Latest</span>{% endif %}
+                        </div>
+                        <p class="text-xs text-gray-500">
+                            {{ version.uploaded_at|date:"M d, Y \a\t g:i A" }}
+                            {% if version.uploaded_by %} &middot; {{ version.uploaded_by.get_full_name|default:version.uploaded_by.username }}{% endif %}
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                        {% if version.document.name|lower|slice:"-4:" == ".pdf" %}
+                        <button @click="$dispatch('open-pdf-preview', { url: '{{ version.document.url }}', title: 'v{{ version.version_number }}' })"
+                            class="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="Preview">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        </button>
+                        {% endif %}
+                        <a href="{{ version.document.url }}" download class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" title="Download">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
         </div>
         {% endif %}
@@ -93,4 +140,196 @@
         </div>
     </div>
 </div>
+
+<!-- PDF Preview Modal -->
+<div x-data="pdfViewer()"
+     @open-pdf-preview.window="open($event.detail.url, $event.detail.title)"
+     @keydown.escape.window="close()"
+     class="relative z-[100]"
+     x-cloak>
+    <template x-if="pdfOpen">
+        <div class="fixed inset-0 flex items-center justify-center p-4">
+            <!-- Backdrop -->
+            <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-md" @click="close()"></div>
+            
+            <!-- Modal Container -->
+            <div class="relative z-10 w-full max-w-5xl h-[92vh] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0">
+                
+                <!-- Header -->
+                <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white flex-shrink-0 z-20">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800 leading-tight" x-text="pdfTitle"></h3>
+                            <p class="text-xs text-slate-500 font-medium" x-show="numPages > 0">
+                                <span x-text="numPages"></span> Pages &middot; <span x-text="Math.round(scale * 100)"></span>% Zoom
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center bg-slate-100 p-1 rounded-xl mr-2">
+                            <button @click="zoomOut()" class="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+                            </button>
+                            <span class="px-2 text-xs font-bold text-slate-500 min-w-[3rem] text-center" x-text="Math.round(scale * 100) + '%'"></span>
+                            <button @click="zoomIn()" class="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            </button>
+                        </div>
+                        
+                        <a :href="pdfUrl" download class="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 shadow-md transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            Download
+                        </a>
+                        
+                        <button @click="close()" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex-1 bg-slate-200 overflow-y-auto p-4 md:p-8 scroll-smooth" id="pdf-scroll-container">
+                    <div class="max-w-4xl mx-auto space-y-6 flex flex-col items-center">
+                        <div id="pdf-pages"></div>
+                        
+                        <div x-show="loading" class="flex flex-col items-center justify-center py-20">
+                            <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+                            <p class="text-slate-500 font-bold animate-pulse">Loading Document...</p>
+                        </div>
+                        
+                        <div x-show="error" class="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md mx-auto">
+                            <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            </div>
+                            <h4 class="text-lg font-bold text-slate-800 mb-2">Oops! Preview Failed</h4>
+                            <p class="text-slate-500 text-sm mb-6" x-text="errorMsg"></p>
+                            <a :href="pdfUrl" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all">
+                                Open Document in New Tab
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</div>
+
+<!-- PDF.js from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+    function pdfViewer() {
+        return {
+            pdfOpen: false, pdfUrl: '', pdfTitle: '', pdfDoc: null, numPages: 0, scale: 1.2, loading: false, error: false, errorMsg: '',
+            async open(url, title) {
+                this.pdfOpen = true; this.pdfUrl = url; this.pdfTitle = title; this.loading = true; this.error = false; this.numPages = 0;
+                try {
+                    // Convert relative URL to absolute if needed
+                    const absoluteUrl = new URL(url, window.location.origin).href;
+                    console.log('Loading PDF from:', absoluteUrl);
+                    
+                    // Fetch PDF as blob first to avoid CORS issues
+                    console.log('Fetching PDF...');
+                    const response = await fetch(absoluteUrl, { 
+                        headers: { 'Cache-Control': 'no-cache' }
+                    });
+                    console.log('Response status:', response.status);
+                    
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    
+                    const blob = await response.blob();
+                    console.log('Blob size:', blob.size, 'bytes, type:', blob.type);
+                    
+                    if (blob.size === 0) {
+                        throw new Error('Received empty PDF file');
+                    }
+                    
+                    const arrayBuffer = await blob.arrayBuffer();
+                    console.log('ArrayBuffer length:', arrayBuffer.byteLength);
+                    
+                    const loadingTask = pdfjsLib.getDocument({
+                        data: arrayBuffer,
+                        rangeChunkSize: 65536
+                    });
+                    
+                    console.log('Loading PDF document...');
+                    this.pdfDoc = await loadingTask.promise;
+                    this.numPages = this.pdfDoc.numPages;
+                    console.log('PDF loaded successfully, pages:', this.numPages);
+                    
+                    this.loading = false;
+                    
+                    // Render all pages dynamically
+                    console.log('Starting to render pages...');
+                    await this.renderAllPages();
+                    console.log('All pages rendered');
+                } catch (err) {
+                    console.error('PDF error details:', err.message, err);
+                    this.loading = false; this.error = true;
+                    this.errorMsg = "Error: " + err.message;
+                }
+            },
+            async renderPage(num) {
+                const pdfContainer = document.getElementById('pdf-pages');
+                if (!pdfContainer) return;
+                
+                const page = await this.pdfDoc.getPage(num);
+                const viewport = page.getViewport({ scale: this.scale });
+                
+                // Create canvas element
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'bg-white shadow-xl rounded-sm overflow-hidden relative';
+                pageDiv.id = 'page-' + num;
+                
+                const canvas = document.createElement('canvas');
+                canvas.className = 'max-w-full h-auto';
+                canvas.id = 'canvas-' + num;
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                
+                // Add page number badge
+                const badge = document.createElement('div');
+                badge.className = 'absolute bottom-4 right-4 bg-slate-900/50 backdrop-blur-sm text-white px-2 py-1 rounded text-[10px] font-bold opacity-0 hover:opacity-100 transition-opacity';
+                badge.textContent = `Page ${num}`;
+                
+                pageDiv.appendChild(canvas);
+                pageDiv.appendChild(badge);
+                pdfContainer.appendChild(pageDiv);
+                
+                // Render to canvas
+                const context = canvas.getContext('2d');
+                await page.render({ canvasContext: context, viewport: viewport }).promise;
+            },
+            async renderAllPages() {
+                for (let i = 1; i <= this.numPages; i++) {
+                    await this.renderPage(i);
+                }
+            },
+            zoomIn() { 
+                if (this.scale >= 3) return; 
+                this.scale += 0.2; 
+                this.clearPages();
+                this.renderAllPages(); 
+            },
+            zoomOut() { 
+                if (this.scale <= 0.6) return; 
+                this.scale -= 0.2; 
+                this.clearPages();
+                this.renderAllPages(); 
+            },
+            clearPages() {
+                const pdfContainer = document.getElementById('pdf-pages');
+                if (pdfContainer) pdfContainer.innerHTML = '';
+            },
+            close() { this.pdfOpen = false; this.pdfDoc = null; this.clearPages(); }
+        }
+    }
+</script>
 {% endblock %}
