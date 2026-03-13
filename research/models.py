@@ -37,6 +37,19 @@ class ResearchRecord(models.Model):
     funding_amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     output_description = models.TextField(blank=True)
     publication_link = models.URLField(blank=True)
+    publication_year = models.PositiveIntegerField(
+        null=True, 
+        blank=True, 
+        help_text="The year this research was officially published"
+    )
+    citation_count = models.PositiveIntegerField(
+        default=0, 
+        help_text="Number of times this research has been cited"
+    )
+    citations_list = models.TextField(
+        blank=True, 
+        help_text="List of sources that cited this research (APA/MLA format)"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

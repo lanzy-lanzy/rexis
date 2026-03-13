@@ -27,6 +27,13 @@ def research_list(request: HttpRequest) -> HttpResponse:
     if status_filter:
         records = records.filter(status=status_filter)
 
+    year_filter = request.GET.get('year')
+    if year_filter:
+        records = records.filter(publication_year=year_filter)
+
+    # Get distinct years for the filter dropdown
+    available_years = ResearchRecord.objects.filter(publication_year__isnull=False).values_list('publication_year', flat=True).distinct().order_by('-publication_year')
+
     paginator = Paginator(records, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -34,6 +41,8 @@ def research_list(request: HttpRequest) -> HttpResponse:
     return render(request, 'research/research_list.html', {
         'page_obj': page_obj,
         'status_choices': ResearchStatus.choices,
+        'available_years': available_years,
+        'current_year_filter': year_filter,
     })
 
 

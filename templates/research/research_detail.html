@@ -76,6 +76,18 @@
                             </a>
                         </div>
                         {% endif %}
+
+                        {% if record.citations_list %}
+                        <div class="mt-8 pt-6 border-t border-slate-200/60">
+                            <h4 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+                                Cited By ({{ record.citation_count }})
+                            </h4>
+                            <div class="bg-white p-4 rounded-xl border border-slate-200 text-sm text-slate-600 whitespace-pre-line leading-relaxed shadow-sm">
+                                {{ record.citations_list }}
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
 
                     <!-- Original Proposal Section -->
@@ -173,6 +185,15 @@
                                     <p class="text-sm font-medium text-slate-400 italic">Not set (Ongoing)</p>
                                 {% endif %}
                             </div>
+
+                            <!-- Publication Year -->
+                            {% if record.publication_year %}
+                            <div class="relative">
+                                <div class="absolute -left-6 bg-indigo-50 w-5 h-5 rounded-full border-4 border-indigo-500 flex items-center justify-center -translate-x-1.5 mt-0.5"></div>
+                                <p class="text-xs font-bold text-indigo-500">Published</p>
+                                <p class="text-sm font-black text-indigo-900">{{ record.publication_year }}</p>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
 

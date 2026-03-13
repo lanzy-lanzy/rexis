@@ -6,7 +6,8 @@ class ResearchRecordForm(forms.ModelForm):
     class Meta:
         model = ResearchRecord
         fields = ['proposal', 'co_researchers', 'status', 'start_date', 'end_date',
-                  'funding_source', 'funding_amount', 'output_description', 'publication_link']
+                  'funding_source', 'funding_amount', 'output_description', 'publication_link',
+                  'publication_year', 'citation_count', 'citations_list']
         widgets = {
             'proposal': forms.Select(attrs={'class': 'form-select'}),
             'co_researchers': forms.SelectMultiple(attrs={'class': 'form-select', 'size': 5}),
@@ -17,4 +18,7 @@ class ResearchRecordForm(forms.ModelForm):
             'funding_amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'output_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'publication_link': forms.URLInput(attrs={'class': 'form-control'}),
+            'publication_year': forms.NumberInput(attrs={'class': 'form-control', 'min': '1900', 'max': '2100'}),
+            'citation_count': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            'citations_list': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'e.g. Smith, J. (2020)...'}),
         }
