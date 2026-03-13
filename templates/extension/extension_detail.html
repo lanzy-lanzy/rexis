@@ -95,6 +95,48 @@
                         </div>
                     </div>
 
+                    <!-- Narrative Reports Section -->
+                    <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                Quarterly Narrative Reports
+                            </h3>
+                            {% if user == record.coordinator or user.is_admin %}
+                            <a href="{% url 'add_extension_report' record.pk %}" class="inline-flex items-center px-3 py-1.5 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-lg hover:bg-indigo-100 transition-colors">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                Submit Report
+                            </a>
+                            {% endif %}
+                        </div>
+
+                        {% if record.narrative_reports.exists %}
+                        <div class="space-y-4">
+                            {% for report in record.narrative_reports.all %}
+                            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div>
+                                        <p class="text-sm font-extrabold text-slate-800">{{ report.get_quarter_display }} {{ report.report_year }}</p>
+                                        <p class="text-xs text-slate-500 mt-0.5">Submitted by {{ report.submitted_by.get_full_name|default:report.submitted_by.username }} on {{ report.date_submitted|date:"M d, Y" }}</p>
+                                    </div>
+                                    <span class="px-2 py-1 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold uppercase rounded-md shadow-sm">
+                                        {{ report.quarter }} '{{ report.report_year|stringformat:"s"|slice:"2:" }}
+                                    </span>
+                                </div>
+                                <div class="prose prose-sm prose-slate max-w-none text-slate-600">
+                                    <p class="whitespace-pre-line">{{ report.narrative }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-6 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                            <svg class="w-10 h-10 mx-auto text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <p class="text-sm font-medium text-slate-500">No quarterly reports submitted yet.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
                     <!-- Partner Profile Section -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">

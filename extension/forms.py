@@ -1,5 +1,5 @@
 from django import forms
-from .models import ExtensionRecord
+from .models import ExtensionRecord, NarrativeReport
 
 
 class ExtensionRecordForm(forms.ModelForm):
@@ -22,4 +22,15 @@ class ExtensionRecordForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'output_documents': forms.FileInput(attrs={'class': 'form-control'}),
             'photos': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+
+
+class NarrativeReportForm(forms.ModelForm):
+    class Meta:
+        model = NarrativeReport
+        fields = ['quarter', 'report_year', 'narrative']
+        widgets = {
+            'quarter': forms.Select(attrs={'class': 'form-select'}),
+            'report_year': forms.NumberInput(attrs={'class': 'form-control', 'min': '2000', 'max': '2100'}),
+            'narrative': forms.Textarea(attrs={'class': 'form-control', 'rows': 10, 'placeholder': 'Provide a detailed narrative report for this quarter here...'}),
         }

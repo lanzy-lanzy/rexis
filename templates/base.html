@@ -74,12 +74,26 @@
                 {% endif %}
                 
                 {% if user.is_extension_staff or user.is_admin or user.is_faculty %}
-                <a href="{% url 'extension_list' %}" class="flex items-center px-3 py-2.5 mt-1 rounded-xl transition-all duration-200 group {% if 'extension' in request.resolver_match.url_name or '/extension/' in request.path %}bg-blue-600 text-white shadow-md font-medium{% else %}text-slate-600 hover:bg-slate-50 hover:text-slate-900{% endif %}">
-                    <svg class="w-5 h-5 mr-3 transition-colors {% if 'extension' in request.resolver_match.url_name or '/extension/' in request.path %}text-white{% else %}text-slate-400 group-hover:text-blue-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                    </svg>
-                    Extension
-                </a>
+                <div x-data="{ open: {% if 'extension' in request.resolver_match.url_name or 'quarterly_reports' in request.resolver_match.url_name or '/extension/' in request.path %}true{% else %}false{% endif %} }" class="mt-1">
+                    <button @click="open = !open" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group {% if 'extension' in request.resolver_match.url_name or 'quarterly_reports' in request.resolver_match.url_name or '/extension/' in request.path %}bg-blue-50 text-blue-700 font-medium{% else %}text-slate-600 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-3 transition-colors {% if 'extension' in request.resolver_match.url_name or 'quarterly_reports' in request.resolver_match.url_name or '/extension/' in request.path %}text-blue-600{% else %}text-slate-400 group-hover:text-blue-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            Extension
+                        </div>
+                        <svg class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    
+                    <div x-show="open" x-collapse class="mt-1 space-y-1 pl-11 pr-2">
+                        <a href="{% url 'extension_list' %}" class="block px-3 py-2 text-sm rounded-lg transition-colors {% if request.resolver_match.url_name == 'extension_list' %}bg-blue-600 text-white font-medium shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                            Projects
+                        </a>
+                        <a href="{% url 'quarterly_reports' %}" class="block px-3 py-2 text-sm rounded-lg transition-colors {% if request.resolver_match.url_name == 'quarterly_reports' %}bg-blue-600 text-white font-medium shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                            Quarterly Reports
+                        </a>
+                    </div>
+                </div>
                 {% endif %}
                 
                 {% if user.is_admin %}

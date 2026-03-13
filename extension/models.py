@@ -66,3 +66,41 @@ class ExtensionRecord(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ReportQuarter(models.TextChoices):
+    Q1 = 'Q1', '1st Quarter (Jan-Mar)'
+    Q2 = 'Q2', '2nd Quarter (Apr-Jun)'
+    Q3 = 'Q3', '3rd Quarter (Jul-Sep)'
+    Q4 = 'Q4', '4th Quarter (Oct-Dec)'
+
+
+class NarrativeReport(models.Model):
+    extension_record = models.ForeignKey(
+        ExtensionRecord,
+        on_delete=models.CASCADE,
+        related_name='narrative_reports'
+    )
+    quarter = models.CharField(max_length=2, choices=ReportQuarter.choices)
+    report_year = models.PositiveIntegerField(
+        help_text="The year this report covers (e.g. 2024)"
+    )
+    narrative = models.TextField(
+        help_text="Detailed narrative report of activities, achievements, and issues."
+    )
+    submitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='submitted_narratives'
+    )
+    date_submitted = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-report_year', '-quarter']
+        unique_together = ['extension_record', 'quarter', 'report_year']
+        verbose_name = 'Narrative Report'
+        verbose_name_plural = 'Narrative Reports'
+
+    def __str__(self):
+        return f"{self.get_quarter_display()} {self.report_year} - {self.extension_record.title}"

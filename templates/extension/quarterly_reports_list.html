@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Quarterly Reports{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto mt-4 mb-10">
+    <div class="bg-white rounded-2xl shadow-card border border-slate-100 overflow-hidden relative">
+        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
+        
+        <div class="p-6 md:p-8">
+            <!-- Header Section -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        Quarterly Narrative Reports
+                    </h1>
+                    <p class="text-slate-500 mt-2 font-medium">Browse and search all submitted quarterly reports for extension projects.</p>
+                </div>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="mb-6 flex flex-wrap gap-4 items-center bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                <form method="get" class="flex flex-wrap gap-4 items-center w-full">
+                    <div class="flex items-center gap-2">
+                        <label for="year" class="text-sm font-bold text-slate-600">Year:</label>
+                        <select name="year" id="year" class="text-sm border-slate-200 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">All Years</option>
+                            {% for year in available_years %}
+                                <option value="{{ year }}" {% if current_year_filter == year|stringformat:'s' %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <label for="quarter" class="text-sm font-bold text-slate-600">Quarter:</label>
+                        <select name="quarter" id="quarter" class="text-sm border-slate-200 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">All Quarters</option>
+                            {% for code, name in quarters %}
+                                <option value="{{ code }}" {% if current_quarter_filter == code %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="px-4 py-2 bg-slate-800 text-white text-sm font-bold rounded-lg hover:bg-slate-700 transition-colors">
+                        Filter
+                    </button>
+                    {% if current_year_filter or current_quarter_filter %}
+                        <a href="{% url 'quarterly_reports' %}" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-lg hover:bg-slate-50 transition-colors">
+                            Clear
+                        </a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Reports List Section -->
+            <div class="space-y-6">
+                {% for report in page_obj %}
+                <div class="bg-white border text-sm border-slate-200/60 rounded-xl overflow-hidden shadow-sm transition-all hover:shadow-md">
+                    <div class="bg-slate-50/80 border-b border-slate-200/80 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-3 mb-1">
+                                <span class="px-2.5 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold uppercase rounded-lg border border-indigo-200">
+                                    {{ report.get_quarter_display }} {{ report.report_year }}
+                                </span>
+                                <span class="text-xs font-medium text-slate-500 flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    {{ report.date_submitted|date:"M d, Y" }}
+                                </span>
+                            </div>
+                            <h3 class="text-base font-extrabold text-slate-800 break-words mt-1.5">
+                                <a href="{% url 'extension_detail' report.extension_record.pk %}" class="hover:text-indigo-600 transition-colors">
+                                    {{ report.extension_record.title }}
+                                </a>
+                            </h3>
+                        </div>
+                        <div class="flex items-center gap-2shrink-0 self-start md:self-auto">
+                            <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold border border-slate-200 shadow-sm" title="{{ report.submitted_by.get_full_name|default:report.submitted_by.username }}">
+                                {{ report.submitted_by.first_name|make_list|first|default:report.submitted_by.username|make_list|first|upper }}
+                            </div>
+                            <span class="text-sm font-semibold text-slate-600 hidden sm:block">{{ report.submitted_by.get_full_name|default:report.submitted_by.username }}</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="prose prose-sm prose-slate max-w-none text-slate-600">
+                            <p class="whitespace-pre-line leading-relaxed">{{ report.narrative }}</p>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-slate-100 flex justify-end">
+                            <a href="{% url 'extension_detail' report.extension_record.pk %}" class="inline-flex items-center text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
+                                View Full Project
+                                <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="py-12 px-6 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-100">
+                        <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    </div>
+                    <p class="text-slate-600 font-bold text-lg mb-1">No reports found</p>
+                    <p class="text-slate-400 text-sm">There are no narrative reports matching your filters.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="mt-8 flex justify-between items-center bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                <span class="text-sm font-medium text-slate-500">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+                <div class="flex items-center gap-2">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if current_year_filter %}&year={{ current_year_filter }}{% endif %}{% if current_quarter_filter %}&quarter={{ current_quarter_filter }}{% endif %}" class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-indigo-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                        </a>
+                    {% endif %}
+                    
+                    <span class="px-4 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 font-bold text-sm border border-indigo-100">
+                        {{ page_obj.number }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if current_year_filter %}&year={{ current_year_filter }}{% endif %}{% if current_quarter_filter %}&quarter={{ current_quarter_filter }}{% endif %}" class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-indigo-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}
