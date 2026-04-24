@@ -1,5 +1,5 @@
 from django import forms
-from .models import Proposal
+from .models import Proposal, ProposalStatus, PROPOSAL_REQUIREMENT_CHOICES
 
 
 class ProposalForm(forms.ModelForm):
@@ -41,16 +41,79 @@ class ProposalForm(forms.ModelForm):
 
 
 class ProposalReviewForm(forms.ModelForm):
+    status = forms.ChoiceField(
+        choices=[
+            (ProposalStatus.APPROVED, 'Approve'),
+            (ProposalStatus.REJECTED, 'Reject and request resubmission'),
+        ],
+        widget=forms.RadioSelect(attrs={
+            'class': 'h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500'
+        })
+    )
+    missing_requirements = forms.MultipleChoiceField(
+        choices=PROPOSAL_REQUIREMENT_CHOICES,
+        required=False,
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'class': 'h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500'
+        })
+    )
+    custom_requirements = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none',
+            'rows': 3,
+            'placeholder': 'Add one custom requirement per line'
+        })
+    )
+
     class Meta:
         model = Proposal
         fields = ['status', 'review_notes']
         widgets = {
-            'status': forms.Select(attrs={
-                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white'
-            }),
             'review_notes': forms.Textarea(attrs={
                 'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none',
                 'rows': 4,
                 'placeholder': 'Provide feedback for the author'
             }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.status == ProposalStatus.PENDING and not self.is_bound:
+            self.fields['status'].initial = ProposalStatus.APPROVED
+
+    def clean(self):
+        cleaned_data = super().clean()
+        status = cleaned_data.get('status')
+        review_notes = (cleaned_data.get('review_notes') or '').strip()
+        missing_requirements = cleaned_data.get('missing_requirements') or []
+        custom_requirements = [
+            line.strip()
+            for line in (cleaned_data.get('custom_requirements') or '').splitlines()
+            if line.strip()
+        ]
+
+        if status == ProposalStatus.REJECTED:
+            if not review_notes:
+                self.add_error('review_notes', 'Review notes are required when rejecting a proposal.')
+            if not missing_requirements and not custom_requirements:
+                self.add_error('missing_requirements', 'Select at least one missing requirement or add a custom requirement.')
+
+        cleaned_data['custom_requirements_list'] = custom_requirements
+        return cleaned_data
+
+
+class ProposalResubmissionForm(forms.Form):
+    def __init__(self, *args, requirements=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.requirements = list(requirements or [])
+        for requirement in self.requirements:
+            if requirement.is_resubmitted:
+                continue
+            self.fields[f'requirement_{requirement.pk}'] = forms.FileField(
+                label=requirement.label,
+                required=True,
+                widget=forms.FileInput(attrs={
+                    'class': 'block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100'
+                })
+            )

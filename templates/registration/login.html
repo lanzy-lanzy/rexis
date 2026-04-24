@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block login_content %}
 <div class="w-full max-w-md mx-auto p-4 sm:p-0">
@@ -7,11 +8,11 @@
         <div class="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-blue-500 to-purple-500"></div>
         
         <div class="text-center mb-10 mt-2">
-            <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 mx-auto mb-5 transform group-hover:scale-105 transition-transform duration-300">
-                <span class="text-white font-black text-3xl">R</span>
+            <div class="w-20 h-20 bg-white rounded-full border border-slate-200 flex items-center justify-center shadow-lg shadow-blue-500/10 mx-auto mb-5 p-2 transform group-hover:scale-105 transition-transform duration-300">
+                <img src="{% static 'images/jh_logo.png' %}" alt="J.H. Cerilles State College logo" class="w-full h-full object-contain">
             </div>
-            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">REXIS</h1>
-            <p class="text-slate-500 font-medium mt-2">Research and Extension MIS</p>
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">Research &amp; Extension (MIS)</h1>
+            <p class="text-slate-500 font-medium mt-2">Management Information System</p>
             <p class="text-xs text-slate-400 mt-2 uppercase tracking-wide font-bold">J.H. Cerilles State College</p>
         </div>
         

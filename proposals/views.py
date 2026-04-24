@@ -6,8 +6,17 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.utils import timezone
 
-from .models import Proposal, ProposalStatus, ProposalType, ProposalDocumentVersion
-from .forms import ProposalForm, ProposalReviewForm
+from .models import (
+    Proposal,
+    ProposalStatus,
+    ProposalType,
+    ProposalDocumentVersion,
+    ProposalRequirement,
+    PROPOSAL_REQUIREMENT_CHOICES,
+    PROPOSAL_REQUIREMENT_LABELS,
+    PROPOSAL_REQUIREMENT_MAPPED_FIELDS,
+)
+from .forms import ProposalForm, ProposalReviewForm, ProposalResubmissionForm
 from users.models import UserRole
 
 
@@ -97,10 +106,23 @@ def proposal_detail(request: HttpRequest, pk: int) -> HttpResponse:
     proposal = get_object_or_404(Proposal, pk=pk)
     user = request.user
     document_versions = proposal.document_versions.order_by('-version_number')
+    requirements = proposal.requirements.all()
+    resubmission_form = None
+
+    if (
+        user.is_faculty and
+        proposal.faculty_author == user and
+        proposal.status == ProposalStatus.REJECTED
+    ):
+        resubmission_form = ProposalResubmissionForm(
+            requirements=requirements.filter(is_resubmitted=False)
+        )
 
     context = {
         'proposal': proposal,
         'document_versions': document_versions,
+        'requirements': requirements,
+        'resubmission_form': resubmission_form,
     }
 
     if user.is_research_staff:
@@ -161,12 +183,100 @@ def proposal_review(request: HttpRequest, pk: int) -> HttpResponse:
             proposal.reviewed_by = request.user
             proposal.reviewed_at = timezone.now()
             proposal.save()
+            if proposal.status == ProposalStatus.REJECTED:
+                proposal.requirements.all().delete()
+                fixed_keys = form.cleaned_data.get('missing_requirements') or []
+                fixed_order = [key for key, _label in PROPOSAL_REQUIREMENT_CHOICES if key in fixed_keys]
+                for key in fixed_order:
+                    ProposalRequirement.objects.create(
+                        proposal=proposal,
+                        requirement_key=key,
+                        label=PROPOSAL_REQUIREMENT_LABELS[key],
+                    )
+                for index, label in enumerate(form.cleaned_data.get('custom_requirements_list') or [], start=1):
+                    ProposalRequirement.objects.create(
+                        proposal=proposal,
+                        requirement_key=f'custom_{index}',
+                        label=label,
+                        is_custom=True,
+                    )
             messages.success(request, f'Proposal {proposal.get_status_display()}!')
             return redirect('proposal_list')
     else:
         form = ProposalReviewForm(instance=proposal)
 
-    return render(request, 'proposals/proposal_review.html', {'form': form, 'proposal': proposal})
+    return render(request, 'proposals/proposal_review.html', {
+        'form': form,
+        'proposal': proposal,
+        'requirements': proposal.requirements.all(),
+    })
+
+
+@login_required
+def proposal_resubmit(request: HttpRequest, pk: int) -> HttpResponse:
+    proposal = get_object_or_404(Proposal, pk=pk)
+
+    if proposal.faculty_author != request.user:
+        messages.error(request, 'You can only resubmit your own proposals.')
+        return redirect('proposal_list')
+
+    if proposal.status != ProposalStatus.REJECTED:
+        messages.error(request, 'Only rejected proposals can be resubmitted.')
+        return redirect('proposal_detail', pk=proposal.pk)
+
+    requirements = proposal.requirements.filter(is_resubmitted=False)
+
+    if request.method == 'POST':
+        form = ProposalResubmissionForm(request.POST, request.FILES, requirements=requirements)
+        if form.is_valid():
+            proposal_update_fields = ['status', 'reviewed_by', 'reviewed_at', 'date_updated']
+            document_version_file = None
+
+            for requirement in requirements:
+                upload = form.cleaned_data.get(f'requirement_{requirement.pk}')
+                if not upload:
+                    continue
+
+                requirement.uploaded_file = upload
+                requirement.uploaded_at = timezone.now()
+                requirement.is_resubmitted = True
+                requirement.save()
+
+                mapped_field = PROPOSAL_REQUIREMENT_MAPPED_FIELDS.get(requirement.requirement_key)
+                if mapped_field:
+                    setattr(proposal, mapped_field, requirement.uploaded_file)
+                    proposal_update_fields.append(mapped_field)
+                    if mapped_field == 'proposal_document':
+                        document_version_file = requirement.uploaded_file
+
+            proposal.status = ProposalStatus.PENDING
+            proposal.reviewed_by = None
+            proposal.reviewed_at = None
+            proposal.save(update_fields=list(dict.fromkeys(proposal_update_fields)))
+
+            if document_version_file:
+                latest_version = proposal.document_versions.order_by('-version_number').first()
+                next_version_num = (latest_version.version_number + 1) if latest_version else 1
+                ProposalDocumentVersion.objects.create(
+                    proposal=proposal,
+                    document=document_version_file,
+                    version_number=next_version_num,
+                    uploaded_by=request.user,
+                    version_notes="Resubmitted document for rejected proposal."
+                )
+
+            messages.success(request, 'Proposal resubmitted for review.')
+            return redirect('proposal_detail', pk=proposal.pk)
+    else:
+        form = ProposalResubmissionForm(requirements=requirements)
+
+    document_versions = proposal.document_versions.order_by('-version_number')
+    return render(request, 'proposals/proposal_detail.html', {
+        'proposal': proposal,
+        'document_versions': document_versions,
+        'requirements': proposal.requirements.all(),
+        'resubmission_form': form,
+    })
 
 
 @login_required

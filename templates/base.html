@@ -1,9 +1,10 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}REXIS - Research and Extension MIS{% endblock %}</title>
+    <title>{% block title %}Research &amp; Extension (MIS){% endblock %}</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
@@ -40,11 +41,14 @@
             class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-100 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:shadow-sm flex flex-col"
         >
             <div class="flex items-center justify-between lg:justify-center h-16 px-6 lg:px-0 border-b border-slate-100">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-md">
-                        <span class="text-white font-bold text-lg">R</span>
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-sm p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                        <img src="{% static 'images/jh_logo.png' %}" alt="J.H. Cerilles State College logo" class="w-full h-full object-contain">
                     </div>
-                    <h1 class="text-xl font-bold text-slate-900 tracking-tight">REXIS</h1>
+                    <h1 class="text-sm font-extrabold text-slate-900 leading-tight tracking-tight">
+                        Research &amp; Extension
+                        <span class="block text-xs font-semibold text-slate-500">(MIS)</span>
+                    </h1>
                 </div>
             </div>
             

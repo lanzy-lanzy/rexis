@@ -119,11 +119,59 @@
         </div>
         {% endif %}
         
-        {% if proposal.reviewed_by %}
-        <div class="bg-gray-50 rounded-lg p-4">
-            <h2 class="text-lg font-semibold mb-2">Review Notes</h2>
-            <p class="text-gray-700">{{ proposal.review_notes }}</p>
+        {% if proposal.reviewed_by or proposal.status == 'REJECTED' %}
+        <div class="{% if proposal.status == 'REJECTED' %}bg-red-50 border border-red-100{% else %}bg-gray-50{% endif %} rounded-lg p-4">
+            <h2 class="text-lg font-semibold mb-2 {% if proposal.status == 'REJECTED' %}text-red-900{% endif %}">
+                {% if proposal.status == 'REJECTED' %}Resubmission Required{% else %}Review Notes{% endif %}
+            </h2>
+            <p class="text-gray-700 whitespace-pre-line">{{ proposal.review_notes }}</p>
+            {% if requirements %}
+            <div class="mt-4">
+                <h3 class="text-sm font-semibold text-gray-800 mb-2">Missing Requirements</h3>
+                <div class="grid sm:grid-cols-2 gap-2">
+                    {% for requirement in requirements %}
+                    <div class="flex items-center justify-between rounded-lg bg-white border border-red-100 px-3 py-2 text-sm">
+                        <span class="font-medium text-gray-700">{{ requirement.label }}</span>
+                        {% if requirement.is_resubmitted %}
+                        <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">Uploaded</span>
+                        {% else %}
+                        <span class="text-xs font-bold text-red-700 bg-red-50 px-2 py-1 rounded-full">Needed</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% if proposal.reviewed_by %}
             <p class="text-sm text-gray-500 mt-2">Reviewed by {{ proposal.reviewed_by.get_full_name }} on {{ proposal.reviewed_at|date:"M d, Y" }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if resubmission_form %}
+        <div class="mt-6 bg-white border border-slate-200 rounded-lg p-5">
+            <div class="mb-4">
+                <h2 class="text-lg font-semibold text-slate-900">Upload Requested Documents</h2>
+                <p class="text-sm text-slate-500 mt-1">Only the documents requested by the admin are shown here.</p>
+            </div>
+            <form method="post" enctype="multipart/form-data" action="{% url 'proposal_resubmit' proposal.pk %}" class="space-y-4">
+                {% csrf_token %}
+                {% for field in resubmission_form %}
+                <div class="rounded-lg bg-slate-50 border border-slate-200 p-4">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <p class="text-red-600 text-sm mt-2">{{ field.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% if resubmission_form.non_field_errors %}
+                <p class="text-red-600 text-sm">{{ resubmission_form.non_field_errors.0 }}</p>
+                {% endif %}
+                <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">
+                    Resubmit Proposal
+                </button>
+            </form>
         </div>
         {% endif %}
         

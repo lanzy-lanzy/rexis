@@ -13,6 +13,22 @@ class ProposalType(models.TextChoices):
     EXTENSION = 'EXTENSION', 'Extension'
 
 
+PROPOSAL_REQUIREMENT_CHOICES = [
+    ('proposal_document', 'Proposal Document'),
+    ('budget_pdf', 'Budget Letter or Budget PDF'),
+    ('workplan', 'Workplan'),
+    ('moa', 'MOA'),
+    ('supporting_image', 'Supporting Image or Evidence'),
+]
+
+PROPOSAL_REQUIREMENT_LABELS = dict(PROPOSAL_REQUIREMENT_CHOICES)
+PROPOSAL_REQUIREMENT_MAPPED_FIELDS = {
+    'proposal_document': 'proposal_document',
+    'budget_pdf': 'budget_pdf',
+    'supporting_image': 'supporting_image',
+}
+
+
 class Proposal(models.Model):
     title = models.CharField(max_length=255)
     abstract = models.TextField()
@@ -87,3 +103,27 @@ class ProposalDocumentVersion(models.Model):
 
     def __str__(self):
         return f"{self.proposal.title} - v{self.version_number}"
+
+
+class ProposalRequirement(models.Model):
+    proposal = models.ForeignKey(
+        Proposal,
+        on_delete=models.CASCADE,
+        related_name='requirements'
+    )
+    requirement_key = models.CharField(max_length=100)
+    label = models.CharField(max_length=255)
+    is_custom = models.BooleanField(default=False)
+    uploaded_file = models.FileField(upload_to='proposals/requirements/', blank=True, null=True)
+    uploaded_at = models.DateTimeField(blank=True, null=True)
+    is_resubmitted = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['created_at', 'id']
+        verbose_name = 'Proposal Requirement'
+        verbose_name_plural = 'Proposal Requirements'
+
+    def __str__(self):
+        return f"{self.proposal.title} - {self.label}"
