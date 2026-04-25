@@ -2,7 +2,7 @@
 
 ## Goal
 
-Refresh the Admin, Faculty, Extension Staff, and Research Staff dashboards so they feel formal, modern, and efficient for daily academic operations. The selected visual direction is "Operations Dense": compact, clean, data-forward, and restrained.
+Refresh the Admin, Faculty, Extension Staff, and Research Staff dashboards so they feel formal, modern, and polished for daily academic operations. The selected visual direction is "Executive Clean": refined, high-contrast, data-forward, and restrained.
 
 ## Scope
 
@@ -17,16 +17,17 @@ The work should preserve the existing Django view context and URL names. No mode
 
 ## Visual Direction
 
-Use a professional administrative interface style:
+Use a professional executive administrative interface style:
 
-- White and very light slate surfaces.
+- A dark slate dashboard header band for strong first-glance hierarchy.
+- White and very light slate content surfaces.
 - Thin borders and subtle shadows.
-- Compact cards with stable spacing and smaller radius than the current rounded dashboard cards.
+- Polished metric cards with stable spacing, restrained accents, and smaller radius than the original rounded dashboard cards.
 - Minimal hover motion; no rotating or playful card animation.
 - Clear status color semantics: amber for pending/planning, blue for ongoing, emerald for approved/completed, red for rejected/cancelled, violet only where it adds category distinction.
-- Dense but readable tables and lists for scanning.
+- Readable tables and lists for scanning.
 
-The design should avoid decorative gradient-heavy panels and oversized UI. It should look like a serious institutional management system.
+The design should avoid playful animation, decorative gradient-heavy panels, and oversized UI. It should look like a serious institutional management system with a more executive finish than the dense operations option.
 
 ## Shared Dashboard Pattern
 
