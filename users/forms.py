@@ -10,7 +10,11 @@ class CustomUserCreationForm(UserCreationForm):
     )
     email = forms.EmailField(required=True)
     employee_id = forms.CharField(max_length=50, required=False)
-    department = forms.CharField(max_length=100, required=False)
+    department = forms.ChoiceField(
+        choices=CustomUser.DEPARTMENT_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
     phone = forms.CharField(max_length=20, required=False)
 
     class Meta(UserCreationForm.Meta):
@@ -32,7 +36,11 @@ class CustomUserChangeForm(UserChangeForm):
     )
     email = forms.EmailField(required=True)
     employee_id = forms.CharField(max_length=50, required=False)
-    department = forms.CharField(max_length=100, required=False)
+    department = forms.ChoiceField(
+        choices=CustomUser.DEPARTMENT_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
     phone = forms.CharField(max_length=20, required=False)
 
     class Meta(UserChangeForm.Meta):
@@ -54,7 +62,11 @@ class FrontendUserChangeForm(forms.ModelForm):
     )
     email = forms.EmailField(required=True)
     employee_id = forms.CharField(max_length=50, required=False)
-    department = forms.CharField(max_length=100, required=False)
+    department = forms.ChoiceField(
+        choices=CustomUser.DEPARTMENT_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
     phone = forms.CharField(max_length=20, required=False)
 
     class Meta:

@@ -114,13 +114,16 @@
                     <label for="{{ form.department.id_for_label }}" class="block text-sm font-semibold text-slate-900 mb-2">
                         Department
                     </label>
-                    <input 
-                        type="text" 
+                    <select 
                         name="department" 
-                        id="{{ form.department.id_for_label }}" 
-                        value="{{ form.department.value|default:'' }}"
+                        id="{{ form.department.id_for_label }}"
                         class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors duration-200"
                     >
+                        <option value="">Select a department</option>
+                        {% for value, label in form.department.field.choices %}
+                            <option value="{{ value }}" {% if form.department.value == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
 
                 <!-- Employee ID -->

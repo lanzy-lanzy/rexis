@@ -9,8 +9,16 @@ class UserRole(models.TextChoices):
     EXTENSION_STAFF = 'EXTENSION_STAFF', 'Extension Staff'
 
 
+class Department(models.TextChoices):
+    SOCJE = 'SOCJE', 'SOCJE'
+    SAFES = 'SAFES', 'SAFES'
+    STE = 'STE', 'STE'
+    SCS = 'SCS', 'SCS'
+
+
 class CustomUser(AbstractUser):
     ROLE_CHOICES = UserRole.choices
+    DEPARTMENT_CHOICES = Department.choices
     
     role = models.CharField(
         max_length=20,
@@ -18,7 +26,11 @@ class CustomUser(AbstractUser):
         default=UserRole.FACULTY
     )
     employee_id = models.CharField(max_length=50, blank=True)
-    department = models.CharField(max_length=100, blank=True)
+    department = models.CharField(
+        max_length=100,
+        choices=Department.choices,
+        blank=True
+    )
     phone = models.CharField(max_length=20, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
