@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -5,6 +6,7 @@ from research.models import ResearchRecord
 from extension.models import ExtensionRecord
 from users.models import CustomUser, UserRole
 from proposals.models import Proposal
+from .reports import build_report_pdf, get_report_context
 
 def home(request):
     research_count = ResearchRecord.objects.count()
@@ -78,3 +80,18 @@ def global_search(request):
         'total_count': total_count,
     }
     return render(request, 'core/search_results.html', context)
+
+
+@login_required
+def comprehensive_reports(request):
+    context = get_report_context(request.user, request.GET)
+    return render(request, 'core/comprehensive_reports.html', context)
+
+
+@login_required
+def comprehensive_reports_pdf(request):
+    context = get_report_context(request.user, request.GET)
+    pdf = build_report_pdf(context, request.user)
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="comprehensive-report.pdf"'
+    return response

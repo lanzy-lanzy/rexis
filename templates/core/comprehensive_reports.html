@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+
+{% block title %}Comprehensive Reports | Research &amp; Extension (MIS){% endblock %}
+{% block page_title %}Reports{% endblock %}
+{% block page_title_mobile %}Reports{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        aside,
+        header,
+        .no-print {
+            display: none !important;
+        }
+
+        body {
+            background: white !important;
+        }
+
+        main {
+            overflow: visible !important;
+            padding: 0 !important;
+        }
+
+        .print-surface {
+            box-shadow: none !important;
+            border: 0 !important;
+        }
+
+        .print-break-inside-avoid {
+            break-inside: avoid;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="space-y-6 print-surface">
+    <div class="overflow-hidden rounded-lg border border-slate-800 bg-slate-950 shadow-soft print-break-inside-avoid">
+        <div class="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-widest text-blue-200">Comprehensive reports</p>
+                <h1 class="mt-1 text-2xl font-bold tracking-tight text-white">{{ scope_label }} Report</h1>
+                <p class="mt-1 max-w-3xl text-sm text-slate-300">{{ scope_description }}</p>
+                <p class="mt-3 text-xs font-medium text-slate-400">Generated {{ generated_at|date:"M d, Y h:i A" }}</p>
+            </div>
+            <div class="no-print flex flex-wrap gap-2">
+                <button type="button" onclick="window.print()" class="inline-flex items-center rounded-md border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-blue-300/40">
+                    Print
+                </button>
+                <a href="{% url 'comprehensive_reports_pdf' %}{% if filter_querystring %}?{{ filter_querystring }}{% endif %}" class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300/40">
+                    Export PDF
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <form method="get" class="no-print rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
+            <div class="xl:col-span-2">
+                <label for="report-q" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Search</label>
+                <input id="report-q" type="search" name="q" value="{{ filters.q }}" placeholder="Title, author, location, narrative" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+            </div>
+            <div>
+                <label for="report-type" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Record Type</label>
+                <select id="report-type" name="record_type" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                    {% for value, label in record_type_choices %}
+                    <option value="{{ value }}" {% if filters.record_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="report-status" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Status</label>
+                <select id="report-status" name="status" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                    <option value="">All statuses</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="report-start-date" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Start Date</label>
+                <input id="report-start-date" type="date" name="start_date" value="{{ filters.start_date }}" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+            </div>
+            <div>
+                <label for="report-end-date" class="block text-xs font-bold uppercase tracking-wider text-slate-500">End Date</label>
+                <input id="report-end-date" type="date" name="end_date" value="{{ filters.end_date }}" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+            </div>
+        </div>
+        <div class="mt-4 flex flex-wrap gap-2">
+            <button type="submit" class="inline-flex items-center rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30">
+                Apply Filters
+            </button>
+            <a href="{% url 'comprehensive_reports' %}" class="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                Clear
+            </a>
+        </div>
+    </form>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="rounded-lg border border-slate-200 border-l-4 border-l-blue-600 bg-white p-5 shadow-sm print-break-inside-avoid">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Proposals</p>
+            <p class="mt-2 text-3xl font-bold tracking-tight text-slate-950">{{ total_proposals }}</p>
+            <p class="mt-3 text-sm font-medium text-slate-600">Scoped submissions</p>
+        </div>
+        <div class="rounded-lg border border-slate-200 border-l-4 border-l-emerald-600 bg-white p-5 shadow-sm print-break-inside-avoid">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Research Records</p>
+            <p class="mt-2 text-3xl font-bold tracking-tight text-slate-950">{{ total_research }}</p>
+            <p class="mt-3 text-sm font-medium text-slate-600">PHP {{ total_funding_display }} funding</p>
+        </div>
+        <div class="rounded-lg border border-slate-200 border-l-4 border-l-violet-600 bg-white p-5 shadow-sm print-break-inside-avoid">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Extension Activities</p>
+            <p class="mt-2 text-3xl font-bold tracking-tight text-slate-950">{{ total_extension }}</p>
+            <p class="mt-3 text-sm font-medium text-slate-600">{{ total_beneficiaries }} beneficiaries</p>
+        </div>
+        <div class="rounded-lg border border-slate-200 border-l-4 border-l-slate-700 bg-white p-5 shadow-sm print-break-inside-avoid">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Narrative Reports</p>
+            <p class="mt-2 text-3xl font-bold tracking-tight text-slate-950">{{ total_reports }}</p>
+            <p class="mt-3 text-sm font-medium text-slate-600">Quarterly submissions</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm print-break-inside-avoid">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500">Proposal Status</h2>
+            <div class="mt-4 space-y-3">
+                {% for row in proposal_status_rows %}
+                <div class="flex items-center justify-between gap-3">
+                    <span class="text-sm font-medium text-slate-600">{{ row.label }}</span>
+                    <span class="text-sm font-bold text-slate-950">{{ row.count }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm print-break-inside-avoid">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500">Research Status</h2>
+            <div class="mt-4 space-y-3">
+                {% for row in research_status_rows %}
+                <div class="flex items-center justify-between gap-3">
+                    <span class="text-sm font-medium text-slate-600">{{ row.label }}</span>
+                    <span class="text-sm font-bold text-slate-950">{{ row.count }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm print-break-inside-avoid">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500">Extension Status</h2>
+            <div class="mt-4 space-y-3">
+                {% for row in extension_status_rows %}
+                <div class="flex items-center justify-between gap-3">
+                    <span class="text-sm font-medium text-slate-600">{{ row.label }}</span>
+                    <span class="text-sm font-bold text-slate-950">{{ row.count }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="rounded-lg border border-slate-200 bg-white shadow-sm print-break-inside-avoid">
+        <div class="border-b border-slate-200 px-5 py-4">
+            <h2 class="text-base font-bold text-slate-950">Proposals</h2>
+            <p class="text-sm text-slate-500">Submission type, status, author, and date submitted</p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+                <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+                    <tr>
+                        <th class="px-5 py-3">Title</th>
+                        <th class="px-5 py-3">Type</th>
+                        <th class="px-5 py-3">Status</th>
+                        <th class="px-5 py-3">Faculty</th>
+                        <th class="px-5 py-3">Submitted</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                    {% for proposal in proposals %}
+                    <tr>
+                        <td class="max-w-sm px-5 py-3 font-semibold text-slate-900">
+                            <a href="{% url 'proposal_detail' proposal.pk %}" class="hover:text-blue-700">{{ proposal.title }}</a>
+                        </td>
+                        <td class="px-5 py-3 text-slate-600">{{ proposal.get_proposal_type_display }}</td>
+                        <td class="px-5 py-3 text-slate-600">{{ proposal.get_status_display }}</td>
+                        <td class="px-5 py-3 text-slate-600">{{ proposal.faculty_author.get_full_name|default:proposal.faculty_author.username }}</td>
+                        <td class="px-5 py-3 text-slate-600">{{ proposal.date_submitted|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-5 py-8 text-center text-sm font-medium text-slate-500">No proposals found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="rounded-lg border border-slate-200 bg-white shadow-sm print-break-inside-avoid">
+        <div class="border-b border-slate-200 px-5 py-4">
+            <h2 class="text-base font-bold text-slate-950">Research Records</h2>
+            <p class="text-sm text-slate-500">Research progress, lead researcher, start date, and funding</p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+                <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+                    <tr>
+                        <th class="px-5 py-3">Title</th>
+                        <th class="px-5 py-3">Status</th>
+                        <th class="px-5 py-3">Lead</th>
+                        <th class="px-5 py-3">Start</th>
+                        <th class="px-5 py-3">Funding</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                    {% for record in research_records %}
+                    <tr>
+                        <td class="max-w-sm px-5 py-3 font-semibold text-slate-900">
+                            <a href="{% url 'research_detail' record.pk %}" class="hover:text-blue-700">{{ record.proposal.title }}</a>
+                        </td>
+                        <td class="px-5 py-3 text-slate-600">{{ record.get_status_display }}</td>
+                        <td class="px-5 py-3 text-slate-600">{{ record.lead_researcher.get_full_name|default:record.lead_researcher.username }}</td>
+                        <td class="px-5 py-3 text-slate-600">{{ record.start_date|date:"M d, Y" }}</td>
+                        <td class="px-5 py-3 text-slate-600">PHP {{ record.funding_amount|default:"0.00" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-5 py-8 text-center text-sm font-medium text-slate-500">No research records found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="rounded-lg border border-slate-200 bg-white shadow-sm print-break-inside-avoid">
+        <div class="border-b border-slate-200 px-5 py-4">
+            <h2 class="text-base font-bold text-slate-950">Extension Activities</h2>
+            <p class="text-sm text-slate-500">Activity status, coordinator, location, and beneficiaries</p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+                <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+                    <tr>
+                        <th class="px-5 py-3">Title</th>
+                        <th class="px-5 py-3">Status</th>
+                        <th class="px-5 py-3">Coordinator</th>
+                        <th class="px-5 py-3">Location</th>
+                        <th class="px-5 py-3">Beneficiaries</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                    {% for record in extension_records %}
+                    <tr>
+                        <td class="max-w-sm px-5 py-3 font-semibold text-slate-900">
+                            <a href="{% url 'extension_detail' record.pk %}" class="hover:text-blue-700">{{ record.title }}</a>
+                        </td>
+                        <td class="px-5 py-3 text-slate-600">{{ record.get_status_display }}</td>
+                        <td class="px-5 py-3 text-slate-600">{{ record.coordinator.get_full_name|default:record.coordinator.username }}</td>
+                        <td class="px-5 py-3 text-slate-600">{{ record.location }}</td>
+                        <td class="px-5 py-3 text-slate-600">{{ record.beneficiary_count }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-5 py-8 text-center text-sm font-medium text-slate-500">No extension activities found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="rounded-lg border border-slate-200 bg-white shadow-sm print-break-inside-avoid">
+        <div class="border-b border-slate-200 px-5 py-4">
+            <h2 class="text-base font-bold text-slate-950">Narrative Reports</h2>
+            <p class="text-sm text-slate-500">Quarterly extension report submissions included in this scope</p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+                <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+                    <tr>
+                        <th class="px-5 py-3">Activity</th>
+                        <th class="px-5 py-3">Quarter</th>
+                        <th class="px-5 py-3">Year</th>
+                        <th class="px-5 py-3">Submitted By</th>
+                        <th class="px-5 py-3">Submitted</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                    {% for report in narrative_reports %}
+                    <tr>
+                        <td class="max-w-sm px-5 py-3 font-semibold text-slate-900">
+                            <a href="{% url 'extension_detail' report.extension_record.pk %}" class="hover:text-blue-700">{{ report.extension_record.title }}</a>
+                        </td>
+                        <td class="px-5 py-3 text-slate-600">{{ report.get_quarter_display }}</td>
+                        <td class="px-5 py-3 text-slate-600">{{ report.report_year }}</td>
+                        <td class="px-5 py-3 text-slate-600">{{ report.submitted_by.get_full_name|default:report.submitted_by.username }}</td>
+                        <td class="px-5 py-3 text-slate-600">{{ report.date_submitted|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-5 py-8 text-center text-sm font-medium text-slate-500">No narrative reports found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

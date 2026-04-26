@@ -4,6 +4,11 @@ This is the repository for Research & Extension (MIS), a Management Information 
 
 ## Key Features
 
+### Comprehensive Reports
+The **Comprehensive Reports** feature gives faculty, administrators, research staff, and extension staff a role-scoped reporting page with search, record type filters, status filters, date range filters, browser printing, and PDF export.
+
+See [Comprehensive Reports](docs/comprehensive-reports.md) for usage and implementation details.
+
 ### Extension Quarterly Reports
 The **Quarterly Narrative Reports** feature is a core component for tracking **Extension** activities. 
 
