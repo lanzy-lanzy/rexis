@@ -13,7 +13,7 @@
                 <p class="mt-1 max-w-2xl text-sm text-slate-300">Monitor proposals, research, extension activities, and user access from one refined institutional overview.</p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <a href="{% url 'proposal_list' %}?status=PENDING" class="inline-flex items-center rounded-md border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-blue-300/40">Review Pending</a>
+                <a href="{% url 'proposal_list' %}?status=RECOMMENDED_APPROVAL" class="inline-flex items-center rounded-md border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-blue-300/40">Review Pending</a>
                 <a href="{% url 'user_management' %}" class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300/40">Manage Users</a>
             </div>
         </div>
@@ -114,7 +114,7 @@
             <div class="grid gap-2 p-4">
                 <a href="{% url 'proposal_create' %}" class="rounded-md border border-slate-200 px-3 py-3 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700">New Proposal</a>
                 <a href="{% url 'user_management' %}" class="rounded-md border border-slate-200 px-3 py-3 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700">Add or Manage Users</a>
-                <a href="{% url 'proposal_list' %}?status=PENDING" class="rounded-md border border-slate-200 px-3 py-3 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700">Review Pending Proposals</a>
+                <a href="{% url 'proposal_list' %}?status=RECOMMENDED_APPROVAL" class="rounded-md border border-slate-200 px-3 py-3 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700">Review Pending Proposals</a>
                 <a href="{% url 'research_create' %}" class="rounded-md border border-slate-200 px-3 py-3 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700">Add Research Record</a>
             </div>
         </div>

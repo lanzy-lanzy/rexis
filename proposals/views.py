@@ -16,8 +16,8 @@ from .models import (
     PROPOSAL_REQUIREMENT_LABELS,
     PROPOSAL_REQUIREMENT_MAPPED_FIELDS,
 )
-from .forms import ProposalForm, ProposalReviewForm, ProposalResubmissionForm
-from users.models import UserRole
+from .forms import ProposalForm, ProposalRecommendationForm, ProposalReviewForm, ProposalResubmissionForm
+from users.models import CustomUser, UserRole
 
 
 @login_required
@@ -27,14 +27,13 @@ def proposal_list(request: HttpRequest) -> HttpResponse:
 
     if user.is_faculty:
         proposals = proposals.filter(faculty_author=user)
-    elif user.is_research_staff:
+    elif user.is_research_extension_staff:
         proposals = proposals.filter(
-            Q(faculty_author=user) | 
-            Q(research_staff=user) |
-            Q(status=ProposalStatus.APPROVED)
+            Q(status=ProposalStatus.PENDING_RECOMMENDATION) |
+            Q(status=ProposalStatus.RECOMMENDED_APPROVAL) |
+            Q(status=ProposalStatus.RECOMMENDED_REVISION) |
+            Q(submitted_by=user)
         )
-    elif user.is_extension_staff:
-        proposals = proposals.filter(proposal_type=ProposalType.EXTENSION)
 
     status_filter = request.GET.get('status')
     if status_filter:
@@ -67,15 +66,23 @@ def proposal_list(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def proposal_create(request: HttpRequest) -> HttpResponse:
-    if not request.user.is_faculty:
-        messages.error(request, 'Only faculty members can submit proposals.')
+    if not (request.user.is_faculty or request.user.is_research_extension_staff):
+        messages.error(request, 'Only faculty members or Research & Extension Staff can submit proposals.')
         return redirect('dashboard')
 
     if request.method == 'POST':
-        form = ProposalForm(request.POST, request.FILES)
+        form = ProposalForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             proposal = form.save(commit=False)
-            proposal.faculty_author = request.user
+            if request.user.is_research_extension_staff:
+                proposal.faculty_author = form.cleaned_data['faculty_author']
+                proposal.submitted_by = request.user
+                proposal.submitted_on_behalf = True
+            else:
+                proposal.faculty_author = request.user
+                proposal.submitted_by = request.user
+                proposal.submitted_on_behalf = False
+            proposal.status = ProposalStatus.PENDING_RECOMMENDATION
             proposal.save()
             
             # Create initial document version if a document was uploaded
@@ -93,7 +100,7 @@ def proposal_create(request: HttpRequest) -> HttpResponse:
                 return render(request, 'proposals/partials/proposal_success.html', {'proposal': proposal})
             return redirect('proposal_list')
     else:
-        form = ProposalForm()
+        form = ProposalForm(user=request.user)
 
     if request.htmx:
         return render(request, 'proposals/partials/proposal_form.html', {'form': form})
@@ -112,7 +119,7 @@ def proposal_detail(request: HttpRequest, pk: int) -> HttpResponse:
     if (
         user.is_faculty and
         proposal.faculty_author == user and
-        proposal.status == ProposalStatus.REJECTED
+        proposal.status in [ProposalStatus.REJECTED, ProposalStatus.RECOMMENDED_REVISION]
     ):
         resubmission_form = ProposalResubmissionForm(
             requirements=requirements.filter(is_resubmitted=False)
@@ -125,7 +132,7 @@ def proposal_detail(request: HttpRequest, pk: int) -> HttpResponse:
         'resubmission_form': resubmission_form,
     }
 
-    if user.is_research_staff:
+    if user.is_research_extension_staff:
         return render(request, 'proposals/proposal_research_detail.html', context)
 
     return render(request, 'proposals/proposal_detail.html', context)
@@ -139,12 +146,12 @@ def proposal_edit(request: HttpRequest, pk: int) -> HttpResponse:
         messages.error(request, 'You can only edit your own proposals.')
         return redirect('proposal_list')
 
-    if proposal.status != ProposalStatus.PENDING:
+    if proposal.status != ProposalStatus.PENDING_RECOMMENDATION:
         messages.error(request, 'You can only edit pending proposals.')
         return redirect('proposal_list')
 
     if request.method == 'POST':
-        form = ProposalForm(request.POST, request.FILES, instance=proposal)
+        form = ProposalForm(request.POST, request.FILES, instance=proposal, user=request.user)
         if form.is_valid():
             proposal = form.save()
             
@@ -163,9 +170,42 @@ def proposal_edit(request: HttpRequest, pk: int) -> HttpResponse:
             messages.success(request, 'Proposal updated successfully!')
             return redirect('proposal_detail', pk=proposal.pk)
     else:
-        form = ProposalForm(instance=proposal)
+        form = ProposalForm(instance=proposal, user=request.user)
 
     return render(request, 'proposals/proposal_form.html', {'form': form, 'proposal': proposal})
+
+
+@login_required
+def proposal_recommend(request: HttpRequest, pk: int) -> HttpResponse:
+    proposal = get_object_or_404(Proposal, pk=pk)
+
+    if not request.user.is_research_extension_staff:
+        messages.error(request, 'Only Research & Extension Staff can recommend proposals.')
+        return redirect('dashboard')
+
+    if proposal.status != ProposalStatus.PENDING_RECOMMENDATION:
+        messages.error(request, 'Only proposals waiting for staff recommendation can be reviewed here.')
+        return redirect('proposal_detail', pk=proposal.pk)
+
+    if request.method == 'POST':
+        form = ProposalRecommendationForm(request.POST, instance=proposal)
+        if form.is_valid():
+            proposal = form.save(commit=False)
+            proposal.recommended_by = request.user
+            proposal.recommended_at = timezone.now()
+            proposal.reviewed_by = None
+            proposal.reviewed_at = None
+            proposal.save()
+            messages.success(request, 'Proposal recommendation submitted.')
+            return redirect('proposal_list')
+    else:
+        form = ProposalRecommendationForm(instance=proposal)
+
+    return render(request, 'proposals/proposal_recommendation.html', {
+        'form': form,
+        'proposal': proposal,
+        'requirements': proposal.requirements.all(),
+    })
 
 
 @login_required
@@ -175,6 +215,10 @@ def proposal_review(request: HttpRequest, pk: int) -> HttpResponse:
     if not request.user.is_admin:
         messages.error(request, 'Only administrators can review proposals.')
         return redirect('dashboard')
+
+    if proposal.status != ProposalStatus.RECOMMENDED_APPROVAL:
+        messages.error(request, 'This proposal must be recommended by Research & Extension Staff before admin review.')
+        return redirect('proposal_detail', pk=proposal.pk)
 
     if request.method == 'POST':
         form = ProposalReviewForm(request.POST, instance=proposal)
@@ -220,8 +264,8 @@ def proposal_resubmit(request: HttpRequest, pk: int) -> HttpResponse:
         messages.error(request, 'You can only resubmit your own proposals.')
         return redirect('proposal_list')
 
-    if proposal.status != ProposalStatus.REJECTED:
-        messages.error(request, 'Only rejected proposals can be resubmitted.')
+    if proposal.status not in [ProposalStatus.REJECTED, ProposalStatus.RECOMMENDED_REVISION]:
+        messages.error(request, 'Only rejected proposals or proposals recommended for revision can be resubmitted.')
         return redirect('proposal_detail', pk=proposal.pk)
 
     requirements = proposal.requirements.filter(is_resubmitted=False)
@@ -229,7 +273,14 @@ def proposal_resubmit(request: HttpRequest, pk: int) -> HttpResponse:
     if request.method == 'POST':
         form = ProposalResubmissionForm(request.POST, request.FILES, requirements=requirements)
         if form.is_valid():
-            proposal_update_fields = ['status', 'reviewed_by', 'reviewed_at', 'date_updated']
+            proposal_update_fields = [
+                'status',
+                'recommended_by',
+                'recommended_at',
+                'reviewed_by',
+                'reviewed_at',
+                'date_updated',
+            ]
             document_version_file = None
 
             for requirement in requirements:
@@ -249,7 +300,9 @@ def proposal_resubmit(request: HttpRequest, pk: int) -> HttpResponse:
                     if mapped_field == 'proposal_document':
                         document_version_file = requirement.uploaded_file
 
-            proposal.status = ProposalStatus.PENDING
+            proposal.status = ProposalStatus.PENDING_RECOMMENDATION
+            proposal.recommended_by = None
+            proposal.recommended_at = None
             proposal.reviewed_by = None
             proposal.reviewed_at = None
             proposal.save(update_fields=list(dict.fromkeys(proposal_update_fields)))
@@ -286,7 +339,7 @@ def proposal_htmx_list(request: HttpRequest) -> HttpResponse:
 
     if user.is_faculty:
         proposals = proposals.filter(faculty_author=user)
-    elif user.is_research_staff:
+    elif user.is_research_extension_staff:
         proposals = proposals.filter(research_staff=user)
 
     status_filter = request.GET.get('status')

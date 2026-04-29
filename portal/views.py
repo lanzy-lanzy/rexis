@@ -27,7 +27,7 @@ def dashboard(request: HttpRequest) -> HttpResponse:
 
 def admin_dashboard(request: HttpRequest) -> HttpResponse:
     total_proposals = Proposal.objects.count()
-    pending_proposals = Proposal.objects.filter(status=ProposalStatus.PENDING).count()
+    pending_proposals = Proposal.objects.filter(status=ProposalStatus.RECOMMENDED_APPROVAL).count()
     approved_proposals = Proposal.objects.filter(status=ProposalStatus.APPROVED).count()
     rejected_proposals = Proposal.objects.filter(status=ProposalStatus.REJECTED).count()
     
@@ -77,7 +77,7 @@ def faculty_dashboard(request: HttpRequest) -> HttpResponse:
     user = request.user
     
     my_proposals = Proposal.objects.filter(faculty_author=user)
-    pending_proposals = my_proposals.filter(status=ProposalStatus.PENDING).count()
+    pending_proposals = my_proposals.filter(status=ProposalStatus.PENDING_RECOMMENDATION).count()
     approved_proposals = my_proposals.filter(status=ProposalStatus.APPROVED).count()
     rejected_proposals = my_proposals.filter(status=ProposalStatus.REJECTED).count()
     
@@ -113,7 +113,7 @@ def research_dashboard(request: HttpRequest) -> HttpResponse:
     
     pending_proposals = Proposal.objects.filter(
         proposal_type=ProposalType.RESEARCH,
-        status=ProposalStatus.PENDING
+        status=ProposalStatus.PENDING_RECOMMENDATION
     ).count()
     
     context = {

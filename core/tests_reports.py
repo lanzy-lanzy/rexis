@@ -54,7 +54,7 @@ class ComprehensiveReportsTests(TestCase):
             full_description='Other description',
             proposal_type=ProposalType.EXTENSION,
             faculty_author=self.other_faculty,
-            status=ProposalStatus.PENDING,
+            status=ProposalStatus.PENDING_RECOMMENDATION,
         )
         self.research_record = ResearchRecord.objects.create(
             proposal=self.faculty_proposal,

@@ -8,12 +8,12 @@ def user_notifications(request):
         user = request.user
         
         if user.is_admin:
-            pending_count = Proposal.objects.filter(status=ProposalStatus.PENDING).count()
+            pending_count = Proposal.objects.filter(status=ProposalStatus.RECOMMENDED_APPROVAL).count()
             if pending_count > 0:
                 notifications.append({
                     'title': 'Pending Proposals',
                     'message': f'There are {pending_count} proposals waiting for your review.',
-                    'url': '/proposals/?status=PENDING',
+                    'url': '/proposals/?status=RECOMMENDED_APPROVAL',
                     'icon': 'document-text',
                     'color': 'amber'
                 })
