@@ -5,8 +5,7 @@ from django.db import models
 class UserRole(models.TextChoices):
     ADMIN = 'ADMIN', 'Administrator'
     FACULTY = 'FACULTY', 'Faculty'
-    RESEARCH_STAFF = 'RESEARCH_STAFF', 'Research Staff'
-    EXTENSION_STAFF = 'EXTENSION_STAFF', 'Extension Staff'
+    RESEARCH_EXTENSION_STAFF = 'RESEARCH_EXTENSION_STAFF', 'Research & Extension Staff'
 
 
 class Department(models.TextChoices):
@@ -21,7 +20,7 @@ class CustomUser(AbstractUser):
     DEPARTMENT_CHOICES = Department.choices
     
     role = models.CharField(
-        max_length=20,
+        max_length=30,
         choices=UserRole.choices,
         default=UserRole.FACULTY
     )
@@ -51,9 +50,13 @@ class CustomUser(AbstractUser):
         return self.role == UserRole.FACULTY
 
     @property
+    def is_research_extension_staff(self):
+        return self.role == UserRole.RESEARCH_EXTENSION_STAFF
+
+    @property
     def is_research_staff(self):
-        return self.role == UserRole.RESEARCH_STAFF
+        return self.is_research_extension_staff
 
     @property
     def is_extension_staff(self):
-        return self.role == UserRole.EXTENSION_STAFF
+        return self.is_research_extension_staff
