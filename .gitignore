@@ -1,4 +1,5 @@
 .superpowers/
 .server/
+.worktrees/
 __pycache__/
 *.py[cod]
