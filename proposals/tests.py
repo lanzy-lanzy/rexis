@@ -10,6 +10,50 @@ from . import models as proposal_models
 from .models import Proposal, ProposalStatus, ProposalType
 
 
+class ProposalWorkflowModelTests(TestCase):
+    def setUp(self):
+        self.faculty = CustomUser.objects.create_user(
+            username='workflow-faculty',
+            password='password',
+            role=UserRole.FACULTY,
+        )
+        self.staff = CustomUser.objects.create_user(
+            username='workflow-staff',
+            password='password',
+            role=UserRole.RESEARCH_EXTENSION_STAFF,
+        )
+
+    def test_new_proposal_defaults_to_pending_recommendation(self):
+        proposal = Proposal.objects.create(
+            title='Workflow Proposal Title',
+            abstract='This abstract is long enough for the workflow model test.',
+            full_description='Detailed proposal description for workflow model test.',
+            proposal_type=ProposalType.RESEARCH,
+            faculty_author=self.faculty,
+            submitted_by=self.faculty,
+        )
+
+        self.assertEqual(proposal.status, ProposalStatus.PENDING_RECOMMENDATION)
+        self.assertEqual(proposal.submitted_by, self.faculty)
+        self.assertFalse(proposal.submitted_on_behalf)
+        self.assertEqual(proposal.project_progress_status, '')
+
+    def test_staff_submission_can_record_on_behalf_owner_and_submitter(self):
+        proposal = Proposal.objects.create(
+            title='Staff Submitted Proposal',
+            abstract='This abstract is long enough for staff submission workflow.',
+            full_description='Detailed proposal description for staff submission.',
+            proposal_type=ProposalType.EXTENSION,
+            faculty_author=self.faculty,
+            submitted_by=self.staff,
+            submitted_on_behalf=True,
+        )
+
+        self.assertEqual(proposal.faculty_author, self.faculty)
+        self.assertEqual(proposal.submitted_by, self.staff)
+        self.assertTrue(proposal.submitted_on_behalf)
+
+
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
 class ProposalRejectionResubmissionTests(TestCase):
     def setUp(self):
