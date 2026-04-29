@@ -20,7 +20,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(merge_staff_roles, split_staff_roles),
         migrations.AlterField(
             model_name='customuser',
             name='role',
@@ -34,4 +33,5 @@ class Migration(migrations.Migration):
                 max_length=30,
             ),
         ),
+        migrations.RunPython(merge_staff_roles, split_staff_roles),
     ]
