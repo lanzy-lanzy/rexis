@@ -28,8 +28,8 @@ class Command(BaseCommand):
         
         # 1. Fetch Users
         faculty_users = list(CustomUser.objects.filter(role=UserRole.FACULTY))
-        research_staff = list(CustomUser.objects.filter(role=UserRole.RESEARCH_STAFF))
-        extension_staff = list(CustomUser.objects.filter(role=UserRole.EXTENSION_STAFF))
+        research_staff = list(CustomUser.objects.filter(role=UserRole.RESEARCH_EXTENSION_STAFF))
+        extension_staff = research_staff
         admin_user = CustomUser.objects.filter(role=UserRole.ADMIN).first()
 
         if not faculty_users:

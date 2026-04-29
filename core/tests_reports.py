@@ -32,12 +32,12 @@ class ComprehensiveReportsTests(TestCase):
         self.research_staff = CustomUser.objects.create_user(
             username='researcher',
             password='password',
-            role=UserRole.RESEARCH_STAFF,
+            role=UserRole.RESEARCH_EXTENSION_STAFF,
         )
         self.extension_staff = CustomUser.objects.create_user(
             username='extension',
             password='password',
-            role=UserRole.EXTENSION_STAFF,
+            role=UserRole.RESEARCH_EXTENSION_STAFF,
         )
 
         self.faculty_proposal = Proposal.objects.create(
