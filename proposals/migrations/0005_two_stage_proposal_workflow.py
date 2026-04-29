@@ -73,7 +73,6 @@ class Migration(migrations.Migration):
                 max_length=20,
             ),
         ),
-        migrations.RunPython(migrate_statuses_forward, migrate_statuses_backward),
         migrations.AlterField(
             model_name='proposal',
             name='status',
@@ -89,4 +88,5 @@ class Migration(migrations.Migration):
                 max_length=30,
             ),
         ),
+        migrations.RunPython(migrate_statuses_forward, migrate_statuses_backward),
     ]
