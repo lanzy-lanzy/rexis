@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
-{% block page_title %}Research Staff Dashboard{% endblock %}
-{% block page_title_mobile %}Research Dashboard{% endblock %}
+{% block page_title %}{% if is_research_extension_dashboard %}Research & Extension Staff Dashboard{% else %}Research Staff Dashboard{% endif %}{% endblock %}
+{% block page_title_mobile %}{% if is_research_extension_dashboard %}Research & Extension Dashboard{% else %}Research Dashboard{% endif %}{% endblock %}
 
 {% block content %}
 <section data-dashboard-shell data-dashboard-variant="executive-clean" class="space-y-6">
@@ -9,7 +9,7 @@
         <div class="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-widest text-blue-200">Operational summary</p>
-                <h1 class="mt-1 text-2xl font-bold tracking-tight text-white">Research Workspace</h1>
+                <h1 class="mt-1 text-2xl font-bold tracking-tight text-white">{% if is_research_extension_dashboard %}Research & Extension Workspace{% else %}Research Workspace{% endif %}</h1>
                 <p class="mt-1 max-w-2xl text-sm text-slate-300">Track research progress, publication status, and approved proposal references in a refined workspace.</p>
             </div>
             <a href="{% url 'research_create' %}" class="inline-flex w-fit items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300/40">Add Research</a>

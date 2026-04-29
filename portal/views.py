@@ -42,8 +42,9 @@ def admin_dashboard(request: HttpRequest) -> HttpResponse:
     
     total_users = CustomUser.objects.count()
     faculty_count = CustomUser.objects.filter(role=UserRole.FACULTY).count()
-    research_count = CustomUser.objects.filter(role=UserRole.RESEARCH_STAFF).count()
-    extension_count = CustomUser.objects.filter(role=UserRole.EXTENSION_STAFF).count()
+    research_extension_count = CustomUser.objects.filter(
+        role=UserRole.RESEARCH_EXTENSION_STAFF
+    ).count()
     
     recent_proposals = Proposal.objects.select_related('faculty_author')[:5]
     recent_research = ResearchRecord.objects.select_related('proposal', 'lead_researcher')[:5]
@@ -62,8 +63,9 @@ def admin_dashboard(request: HttpRequest) -> HttpResponse:
         'ongoing_extension': ongoing_extension,
         'total_users': total_users,
         'faculty_count': faculty_count,
-        'research_count': research_count,
-        'extension_count': extension_count,
+        'research_count': research_extension_count,
+        'extension_count': research_extension_count,
+        'research_extension_count': research_extension_count,
         'recent_proposals': recent_proposals,
         'recent_research': recent_research,
         'recent_extension': recent_extension,
@@ -115,6 +117,7 @@ def research_dashboard(request: HttpRequest) -> HttpResponse:
     ).count()
     
     context = {
+        'is_research_extension_dashboard': user.is_research_extension_staff,
         'my_research': my_research[:5],
         'total_research': my_research.count(),
         'ongoing_research': ongoing_research,
