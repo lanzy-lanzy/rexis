@@ -32,12 +32,12 @@ class ComprehensiveReportsTests(TestCase):
         self.research_staff = CustomUser.objects.create_user(
             username='researcher',
             password='password',
-            role=UserRole.RESEARCH_STAFF,
+            role=UserRole.RESEARCH_EXTENSION_STAFF,
         )
         self.extension_staff = CustomUser.objects.create_user(
             username='extension',
             password='password',
-            role=UserRole.EXTENSION_STAFF,
+            role=UserRole.RESEARCH_EXTENSION_STAFF,
         )
 
         self.faculty_proposal = Proposal.objects.create(
@@ -54,7 +54,7 @@ class ComprehensiveReportsTests(TestCase):
             full_description='Other description',
             proposal_type=ProposalType.EXTENSION,
             faculty_author=self.other_faculty,
-            status=ProposalStatus.PENDING,
+            status=ProposalStatus.PENDING_RECOMMENDATION,
         )
         self.research_record = ResearchRecord.objects.create(
             proposal=self.faculty_proposal,
@@ -167,3 +167,36 @@ class ComprehensiveReportsTests(TestCase):
         self.assertContains(response, 'q=Barangay')
         self.assertContains(response, 'record_type=extension')
         self.assertContains(response, 'start_date=2026-02-01')
+
+    def test_reports_filter_by_approval_progress_department_and_submitter(self):
+        self.faculty.department = 'SCS'
+        self.faculty.save()
+        staff_submitted = Proposal.objects.create(
+            title='Staff Submitted SCS Proposal',
+            abstract='Staff submitted report filter abstract.',
+            full_description='Staff submitted report filter description.',
+            proposal_type=ProposalType.RESEARCH,
+            faculty_author=self.faculty,
+            submitted_by=self.research_staff,
+            submitted_on_behalf=True,
+            status=ProposalStatus.APPROVED,
+            project_progress_status='PRESENTED',
+        )
+        self.client.login(username='admin', password='password')
+
+        response = self.client.get(
+            reverse('comprehensive_reports'),
+            {
+                'approval_status': ProposalStatus.APPROVED,
+                'project_progress': 'PRESENTED',
+                'department': 'SCS',
+                'submitter_type': 'staff_on_behalf',
+            },
+        )
+
+        self.assertContains(response, 'Staff Submitted SCS Proposal')
+        self.assertContains(response, 'approval_status=APPROVED')
+        self.assertContains(response, 'project_progress=PRESENTED')
+        self.assertContains(response, 'department=SCS')
+        self.assertContains(response, 'submitter_type=staff_on_behalf')
+        self.assertNotContains(response, 'Other Faculty Proposal')

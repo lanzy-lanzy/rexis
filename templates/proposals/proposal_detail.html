@@ -7,10 +7,13 @@
     <div class="bg-white rounded-lg shadow p-6 mb-6">
         <div class="flex items-center justify-between mb-4">
             <h1 class="text-2xl font-bold text-gray-800">{{ proposal.title }}</h1>
-            <span class="px-3 py-1 text-sm rounded-full 
-                {% if proposal.status == 'PENDING' %}bg-yellow-100 text-yellow-800
+            <span class="px-3 py-1 text-sm rounded-full
+                {% if proposal.status == 'PENDING_RECOMMENDATION' %}bg-yellow-100 text-yellow-800
+                {% elif proposal.status == 'RECOMMENDED_APPROVAL' %}bg-indigo-100 text-indigo-800
+                {% elif proposal.status == 'RECOMMENDED_REVISION' %}bg-orange-100 text-orange-800
                 {% elif proposal.status == 'APPROVED' %}bg-green-100 text-green-800
-                {% else %}bg-red-100 text-red-800{% endif %}">
+                {% elif proposal.status == 'REJECTED' %}bg-red-100 text-red-800
+                {% else %}bg-gray-100 text-gray-800{% endif %}">
                 {{ proposal.get_status_display }}
             </span>
         </div>
@@ -19,9 +22,16 @@
             <div>
                 <p><span class="font-medium">Author:</span> {{ proposal.faculty_author.get_full_name|default:proposal.faculty_author.username }}</p>
                 <p><span class="font-medium">Type:</span> {{ proposal.get_proposal_type_display }}</p>
+                {% if proposal.project_progress_status %}
+                <p><span class="font-medium">Project Progress:</span> {{ proposal.get_project_progress_status_display }}</p>
+                {% endif %}
             </div>
             <div>
                 <p><span class="font-medium">Submitted:</span> {{ proposal.date_submitted|date:"M d, Y" }}</p>
+                <p><span class="font-medium">Submitted By:</span> {% if proposal.submitted_by %}{{ proposal.submitted_by.get_full_name|default:proposal.submitted_by.username }}{% else %}{{ proposal.faculty_author.get_full_name|default:proposal.faculty_author.username }}{% endif %}</p>
+                {% if proposal.submitted_on_behalf %}
+                <p><span class="font-medium">Submission Type:</span> Submitted on behalf of faculty</p>
+                {% endif %}
                 {% if proposal.research_staff %}
                 <p><span class="font-medium">Research Staff:</span> {{ proposal.research_staff.get_full_name }}</p>
                 {% endif %}
@@ -119,6 +129,16 @@
         </div>
         {% endif %}
         
+        {% if proposal.recommended_by or proposal.status == 'RECOMMENDED_REVISION' or proposal.status == 'RECOMMENDED_APPROVAL' %}
+        <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
+            <h2 class="text-lg font-semibold mb-2 text-blue-900">Staff Recommendation</h2>
+            <p class="text-gray-700 whitespace-pre-line">{{ proposal.recommendation_notes|default:"No recommendation notes provided." }}</p>
+            {% if proposal.recommended_by %}
+            <p class="text-sm text-gray-500 mt-2">Recommended by {{ proposal.recommended_by.get_full_name|default:proposal.recommended_by.username }} on {{ proposal.recommended_at|date:"M d, Y" }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
         {% if proposal.reviewed_by or proposal.status == 'REJECTED' %}
         <div class="{% if proposal.status == 'REJECTED' %}bg-red-50 border border-red-100{% else %}bg-gray-50{% endif %} rounded-lg p-4">
             <h2 class="text-lg font-semibold mb-2 {% if proposal.status == 'REJECTED' %}text-red-900{% endif %}">
@@ -178,12 +198,16 @@
         <div class="flex gap-4 mt-6">
             <a href="{% url 'proposal_list' %}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Back to List</a>
             
-            {% if user.is_faculty and proposal.faculty_author == user and proposal.status == 'PENDING' %}
+            {% if user.is_faculty and proposal.faculty_author == user and proposal.status == 'PENDING_RECOMMENDATION' %}
             <a href="{% url 'proposal_edit' proposal.pk %}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-800">Edit</a>
             {% endif %}
             
-            {% if user.is_admin and proposal.status == 'PENDING' %}
-            <a href="{% url 'proposal_review' proposal.pk %}" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Review</a>
+            {% if user.is_admin and proposal.status == 'RECOMMENDED_APPROVAL' %}
+            <a href="{% url 'proposal_review' proposal.pk %}" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Review & Decide</a>
+            {% endif %}
+            
+            {% if user.is_admin and proposal.status == 'RECOMMENDED_REVISION' %}
+            <a href="{% url 'proposal_review' proposal.pk %}" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">Review</a>
             {% endif %}
         </div>
     </div>

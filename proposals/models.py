@@ -3,9 +3,17 @@ from django.conf import settings
 
 
 class ProposalStatus(models.TextChoices):
-    PENDING = 'PENDING', 'Pending'
+    PENDING_RECOMMENDATION = 'PENDING_RECOMMENDATION', 'Pending Staff Recommendation'
+    RECOMMENDED_APPROVAL = 'RECOMMENDED_APPROVAL', 'Recommended for Admin Approval'
+    RECOMMENDED_REVISION = 'RECOMMENDED_REVISION', 'Recommended for Revision'
     APPROVED = 'APPROVED', 'Approved'
     REJECTED = 'REJECTED', 'Rejected'
+
+
+class ProjectProgressStatus(models.TextChoices):
+    ONGOING = 'ONGOING', 'Ongoing'
+    PRESENTED = 'PRESENTED', 'Presented'
+    COMPLETED = 'COMPLETED', 'Completed'
 
 
 class ProposalType(models.TextChoices):
@@ -43,6 +51,14 @@ class Proposal(models.Model):
         on_delete=models.CASCADE,
         related_name='proposals_authored'
     )
+    submitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='proposals_submitted'
+    )
+    submitted_on_behalf = models.BooleanField(default=False)
     research_staff = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -56,10 +72,19 @@ class Proposal(models.Model):
     budget_pdf = models.FileField(upload_to='proposals/budgets/', blank=True, null=True)
     supporting_image = models.ImageField(upload_to='proposals/images/', blank=True, null=True)
     status = models.CharField(
-        max_length=20,
+        max_length=30,
         choices=ProposalStatus.choices,
-        default=ProposalStatus.PENDING
+        default=ProposalStatus.PENDING_RECOMMENDATION
     )
+    recommended_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='proposals_recommended'
+    )
+    recommendation_notes = models.TextField(blank=True)
+    recommended_at = models.DateTimeField(blank=True, null=True)
     reviewed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -69,6 +94,11 @@ class Proposal(models.Model):
     )
     review_notes = models.TextField(blank=True)
     reviewed_at = models.DateTimeField(blank=True, null=True)
+    project_progress_status = models.CharField(
+        max_length=20,
+        choices=ProjectProgressStatus.choices,
+        blank=True
+    )
 
     class Meta:
         ordering = ['-date_submitted']

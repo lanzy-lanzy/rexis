@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Recommend Proposal{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <div class="grid lg:grid-cols-[1fr_380px] gap-6">
+        <section class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Staff Recommendation</p>
+            <h1 class="text-2xl font-bold text-slate-900 mt-1">{{ proposal.title }}</h1>
+            <div class="grid sm:grid-cols-2 gap-4 text-sm text-slate-600 my-6">
+                <div class="rounded-lg bg-slate-50 border border-slate-100 p-4">
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Faculty Author</p>
+                    <p class="font-semibold text-slate-800">{{ proposal.faculty_author.get_full_name|default:proposal.faculty_author.username }}</p>
+                </div>
+                <div class="rounded-lg bg-slate-50 border border-slate-100 p-4">
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Submitted By</p>
+                    <p class="font-semibold text-slate-800">{% if proposal.submitted_by %}{{ proposal.submitted_by.get_full_name|default:proposal.submitted_by.username }}{% else %}{{ proposal.faculty_author.get_full_name|default:proposal.faculty_author.username }}{% endif %}</p>
+                </div>
+            </div>
+            <h2 class="text-sm font-bold text-slate-900 mb-2">Abstract</h2>
+            <p class="text-sm leading-6 text-slate-700 whitespace-pre-line mb-6">{{ proposal.abstract }}</p>
+            <h2 class="text-sm font-bold text-slate-900 mb-2">Full Description</h2>
+            <p class="text-sm leading-6 text-slate-700 whitespace-pre-line">{{ proposal.full_description }}</p>
+        </section>
+
+        <aside class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+            <h2 class="text-lg font-bold text-slate-900 mb-1">Recommendation</h2>
+            <p class="text-sm text-slate-500 mb-5">Send this proposal to admin or return it to faculty for revision.</p>
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                <div class="space-y-2">
+                    {% for radio in form.status %}
+                    <label class="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                        {{ radio.tag }}
+                        <span>{{ radio.choice_label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% if form.status.errors %}
+                <p class="text-red-600 text-sm">{{ form.status.errors.0 }}</p>
+                {% endif %}
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Recommendation Notes</label>
+                    {{ form.recommendation_notes }}
+                    {% if form.recommendation_notes.errors %}
+                    <p class="text-red-600 text-sm mt-2">{{ form.recommendation_notes.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button type="submit" class="inline-flex justify-center px-5 py-2.5 bg-slate-900 text-white rounded-lg font-semibold hover:bg-slate-800">Submit Recommendation</button>
+                    <a href="{% url 'proposal_list' %}" class="inline-flex justify-center px-5 py-2.5 border border-slate-300 rounded-lg font-semibold text-slate-700 hover:bg-slate-50">Cancel</a>
+                </div>
+            </form>
+        </aside>
+    </div>
+</div>
+{% endblock %}

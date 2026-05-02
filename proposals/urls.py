@@ -6,6 +6,7 @@ urlpatterns = [
     path('create/', views.proposal_create, name='proposal_create'),
     path('<int:pk>/', views.proposal_detail, name='proposal_detail'),
     path('<int:pk>/edit/', views.proposal_edit, name='proposal_edit'),
+    path('<int:pk>/recommend/', views.proposal_recommend, name='proposal_recommend'),
     path('<int:pk>/review/', views.proposal_review, name='proposal_review'),
     path('<int:pk>/resubmit/', views.proposal_resubmit, name='proposal_resubmit'),
     path('htmx/list/', views.proposal_htmx_list, name='proposal_htmx_list'),

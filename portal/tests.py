@@ -34,12 +34,7 @@ class DashboardVisualRefreshTests(TestCase):
 
         self.assert_dashboard_shell(user, 'Faculty Workspace')
 
-    def test_research_dashboard_uses_formal_operations_layout(self):
-        user = self.make_user('research-user', UserRole.RESEARCH_STAFF)
+    def test_research_extension_dashboard_uses_formal_operations_layout(self):
+        user = self.make_user('research-extension-user', UserRole.RESEARCH_EXTENSION_STAFF)
 
-        self.assert_dashboard_shell(user, 'Research Workspace')
-
-    def test_extension_dashboard_uses_formal_operations_layout(self):
-        user = self.make_user('extension-user', UserRole.EXTENSION_STAFF)
-
-        self.assert_dashboard_shell(user, 'Extension Workspace')
+        self.assert_dashboard_shell(user, 'Research & Extension Workspace')

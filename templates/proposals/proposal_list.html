@@ -111,12 +111,16 @@
                         
                         <td class="px-6 py-4">
                             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold capitalize border
-                                {% if proposal.status == 'PENDING' %}bg-amber-50 text-amber-700 border-amber-200
+                                {% if proposal.status == 'PENDING_RECOMMENDATION' %}bg-amber-50 text-amber-700 border-amber-200
+                                {% elif proposal.status == 'RECOMMENDED_APPROVAL' %}bg-blue-50 text-blue-700 border-blue-200
+                                {% elif proposal.status == 'RECOMMENDED_REVISION' %}bg-orange-50 text-orange-700 border-orange-200
                                 {% elif proposal.status == 'APPROVED' %}bg-emerald-50 text-emerald-700 border-emerald-200
                                 {% elif proposal.status == 'REJECTED' %}bg-red-50 text-red-700 border-red-200
                                 {% else %}bg-slate-50 text-slate-700 border-slate-200{% endif %}">
-                                <span class="w-1.5 h-1.5 rounded-full 
-                                    {% if proposal.status == 'PENDING' %}bg-amber-500
+                                <span class="w-1.5 h-1.5 rounded-full
+                                    {% if proposal.status == 'PENDING_RECOMMENDATION' %}bg-amber-500
+                                    {% elif proposal.status == 'RECOMMENDED_APPROVAL' %}bg-blue-500
+                                    {% elif proposal.status == 'RECOMMENDED_REVISION' %}bg-orange-500
                                     {% elif proposal.status == 'APPROVED' %}bg-emerald-500
                                     {% elif proposal.status == 'REJECTED' %}bg-red-500
                                     {% else %}bg-slate-400{% endif %}">
@@ -130,8 +134,14 @@
                                 <a href="{% url 'proposal_detail' proposal.pk %}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1" title="View Details">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                 </a>
-                                
-                                {% if user.is_admin and proposal.status == 'PENDING' %}
+
+                                {% if user.is_research_extension_staff and proposal.status == 'PENDING_RECOMMENDATION' %}
+                                <a href="{% url 'proposal_recommend' proposal.pk %}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-1" title="Recommend Proposal">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                </a>
+                                {% endif %}
+
+                                {% if user.is_admin and proposal.status == 'RECOMMENDED_APPROVAL' %}
                                 <a href="{% url 'proposal_review' proposal.pk %}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1" title="Review Proposal">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 </a>

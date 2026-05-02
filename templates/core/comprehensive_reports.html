@@ -56,7 +56,7 @@
     </div>
 
     <form method="get" class="no-print rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
             <div class="xl:col-span-2">
                 <label for="report-q" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Search</label>
                 <input id="report-q" type="search" name="q" value="{{ filters.q }}" placeholder="Title, author, location, narrative" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
@@ -85,6 +85,42 @@
             <div>
                 <label for="report-end-date" class="block text-xs font-bold uppercase tracking-wider text-slate-500">End Date</label>
                 <input id="report-end-date" type="date" name="end_date" value="{{ filters.end_date }}" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+            </div>
+            <div>
+                <label for="report-approval-status" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Approval</label>
+                <select id="report-approval-status" name="approval_status" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                    <option value="">All approvals</option>
+                    {% for value, label in approval_status_choices %}
+                    <option value="{{ value }}" {% if filters.approval_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="report-project-progress" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Project Progress</label>
+                <select id="report-project-progress" name="project_progress" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                    <option value="">All progress</option>
+                    {% for value, label in project_progress_choices %}
+                    <option value="{{ value }}" {% if filters.project_progress == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="report-department" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Department</label>
+                <select id="report-department" name="department" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                    <option value="">All departments</option>
+                    {% for value, label in department_choices %}
+                    <option value="{{ value }}" {% if filters.department == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="report-submitter-type" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Submitter</label>
+                <select id="report-submitter-type" name="submitter_type" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                    <option value="">All submitters</option>
+                    {% for value, label in submitter_type_choices %}
+                    <option value="{{ value }}" {% if filters.submitter_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
             </div>
         </div>
         <div class="mt-4 flex flex-wrap gap-2">

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Research & Extension Dashboard{% endblock %}
+
+{% block content %}
+<div data-dashboard-shell data-dashboard-variant="executive-clean" class="max-w-7xl mx-auto space-y-6">
+    <section class="rounded-lg bg-slate-900 text-white p-6">
+        <p class="text-sm uppercase tracking-wider text-slate-300">Operational summary</p>
+        <h1 class="text-2xl font-bold mt-1">Research & Extension Workspace</h1>
+        <p class="text-slate-300 mt-2">Review faculty proposals before admin approval and monitor approved project progress.</p>
+    </section>
+
+    <section class="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="metric-card bg-white border border-slate-200 rounded-lg p-4">
+            <p class="text-xs font-bold uppercase text-slate-500">Pending Recommendations</p>
+            <p class="text-2xl font-bold text-slate-900">{{ total_pending_recommendations }}</p>
+        </div>
+        <div class="metric-card bg-white border border-slate-200 rounded-lg p-4">
+            <p class="text-xs font-bold uppercase text-slate-500">Recommended For Admin</p>
+            <p class="text-2xl font-bold text-slate-900">{{ total_recommended_for_admin }}</p>
+        </div>
+        <div class="metric-card bg-white border border-slate-200 rounded-lg p-4">
+            <p class="text-xs font-bold uppercase text-slate-500">Ongoing</p>
+            <p class="text-2xl font-bold text-slate-900">{{ ongoing_projects }}</p>
+        </div>
+        <div class="metric-card bg-white border border-slate-200 rounded-lg p-4">
+            <p class="text-xs font-bold uppercase text-slate-500">Presented</p>
+            <p class="text-2xl font-bold text-slate-900">{{ presented_projects }}</p>
+        </div>
+        <div class="metric-card bg-white border border-slate-200 rounded-lg p-4">
+            <p class="text-xs font-bold uppercase text-slate-500">Completed</p>
+            <p class="text-2xl font-bold text-slate-900">{{ completed_projects }}</p>
+        </div>
+    </section>
+
+    <section class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+            <h2 class="font-bold text-slate-900">Pending Recommendations</h2>
+            <a href="{% url 'proposal_create' %}" class="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-semibold">Submit on Behalf</a>
+        </div>
+        <div class="divide-y divide-slate-100">
+            {% for proposal in pending_recommendations %}
+            <div class="px-5 py-4 flex items-center justify-between gap-4">
+                <div>
+                    <p class="font-semibold text-slate-800">{{ proposal.title }}</p>
+                    <p class="text-xs text-slate-500">{{ proposal.faculty_author.get_full_name|default:proposal.faculty_author.username }}</p>
+                </div>
+                <a href="{% url 'proposal_recommend' proposal.pk %}" class="px-3 py-2 rounded-lg bg-blue-50 text-blue-700 text-sm font-semibold">Recommend</a>
+            </div>
+            {% empty %}
+            <p class="px-5 py-8 text-sm text-slate-500">No proposals are waiting for recommendation.</p>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

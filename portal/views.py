@@ -12,38 +12,36 @@ from users.models import CustomUser, UserRole
 @login_required
 def dashboard(request: HttpRequest) -> HttpResponse:
     user = request.user
-    
+
     if user.is_admin:
         return admin_dashboard(request)
     elif user.is_faculty:
         return faculty_dashboard(request)
-    elif user.is_research_staff:
-        return research_dashboard(request)
-    elif user.is_extension_staff:
-        return extension_dashboard(request)
-    
+    elif user.is_research_extension_staff:
+        return research_extension_dashboard(request)
+
     return redirect('login')
 
 
 def admin_dashboard(request: HttpRequest) -> HttpResponse:
     total_proposals = Proposal.objects.count()
-    pending_proposals = Proposal.objects.filter(status=ProposalStatus.PENDING).count()
+    pending_recommendations = Proposal.objects.filter(status=ProposalStatus.PENDING_RECOMMENDATION).count()
+    recommended_approval = Proposal.objects.filter(status=ProposalStatus.RECOMMENDED_APPROVAL).count()
     approved_proposals = Proposal.objects.filter(status=ProposalStatus.APPROVED).count()
     rejected_proposals = Proposal.objects.filter(status=ProposalStatus.REJECTED).count()
-    
+
     research_proposals = Proposal.objects.filter(proposal_type=ProposalType.RESEARCH).count()
     extension_proposals = Proposal.objects.filter(proposal_type=ProposalType.EXTENSION).count()
-    
+
     total_research = ResearchRecord.objects.count()
     ongoing_research = ResearchRecord.objects.filter(status=ResearchStatus.ONGOING).count()
-    
+
     total_extension = ExtensionRecord.objects.count()
     ongoing_extension = ExtensionRecord.objects.filter(status=ExtensionStatus.ONGOING).count()
-    
+
     total_users = CustomUser.objects.count()
     faculty_count = CustomUser.objects.filter(role=UserRole.FACULTY).count()
-    research_count = CustomUser.objects.filter(role=UserRole.RESEARCH_STAFF).count()
-    extension_count = CustomUser.objects.filter(role=UserRole.EXTENSION_STAFF).count()
+    staff_count = CustomUser.objects.filter(role=UserRole.RESEARCH_EXTENSION_STAFF).count()
     
     recent_proposals = Proposal.objects.select_related('faculty_author')[:5]
     recent_research = ResearchRecord.objects.select_related('proposal', 'lead_researcher')[:5]
@@ -51,7 +49,7 @@ def admin_dashboard(request: HttpRequest) -> HttpResponse:
     
     context = {
         'total_proposals': total_proposals,
-        'pending_proposals': pending_proposals,
+        'pending_proposals': pending_recommendations,
         'approved_proposals': approved_proposals,
         'rejected_proposals': rejected_proposals,
         'research_proposals': research_proposals,
@@ -62,8 +60,8 @@ def admin_dashboard(request: HttpRequest) -> HttpResponse:
         'ongoing_extension': ongoing_extension,
         'total_users': total_users,
         'faculty_count': faculty_count,
-        'research_count': research_count,
-        'extension_count': extension_count,
+        'research_count': staff_count,
+        'extension_count': staff_count,
         'recent_proposals': recent_proposals,
         'recent_research': recent_research,
         'recent_extension': recent_extension,
@@ -71,11 +69,43 @@ def admin_dashboard(request: HttpRequest) -> HttpResponse:
     return render(request, 'portal/admin_dashboard.html', context)
 
 
+def research_extension_dashboard(request: HttpRequest) -> HttpResponse:
+    user = request.user
+    pending_recommendations = Proposal.objects.filter(status=ProposalStatus.PENDING_RECOMMENDATION)
+    recommended_for_admin = Proposal.objects.filter(status=ProposalStatus.RECOMMENDED_APPROVAL)
+    ongoing_projects = Proposal.objects.filter(
+        status=ProposalStatus.APPROVED,
+        project_progress_status='ONGOING',
+    )
+    presented_projects = Proposal.objects.filter(
+        status=ProposalStatus.APPROVED,
+        project_progress_status='PRESENTED',
+    )
+    completed_projects = Proposal.objects.filter(
+        status=ProposalStatus.APPROVED,
+        project_progress_status='COMPLETED',
+    )
+
+    context = {
+        'pending_recommendations': pending_recommendations[:5],
+        'recommended_for_admin': recommended_for_admin[:5],
+        'total_pending_recommendations': pending_recommendations.count(),
+        'total_recommended_for_admin': recommended_for_admin.count(),
+        'ongoing_projects': ongoing_projects.count(),
+        'presented_projects': presented_projects.count(),
+        'completed_projects': completed_projects.count(),
+        'my_submitted_proposals': Proposal.objects.filter(submitted_by=user)[:5],
+    }
+    return render(request, 'portal/research_extension_dashboard.html', context)
+
+
 def faculty_dashboard(request: HttpRequest) -> HttpResponse:
     user = request.user
-    
+
     my_proposals = Proposal.objects.filter(faculty_author=user)
-    pending_proposals = my_proposals.filter(status=ProposalStatus.PENDING).count()
+    pending_proposals = my_proposals.filter(
+        status__in=[ProposalStatus.PENDING_RECOMMENDATION, ProposalStatus.RECOMMENDED_REVISION]
+    ).count()
     approved_proposals = my_proposals.filter(status=ProposalStatus.APPROVED).count()
     rejected_proposals = my_proposals.filter(status=ProposalStatus.REJECTED).count()
     

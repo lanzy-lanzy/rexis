@@ -12,8 +12,9 @@ from reportlab.lib.units import inch
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from extension.models import ExtensionRecord, NarrativeReport
-from proposals.models import Proposal, ProposalType
+from proposals.models import Proposal, ProposalType, ProposalStatus, ProjectProgressStatus
 from research.models import ResearchRecord
+from users.models import CustomUser
 
 
 RECORD_TYPE_CHOICES = [
@@ -63,6 +64,10 @@ def _active_filters(params):
         'status': (params.get('status') or '').strip(),
         'start_date': (params.get('start_date') or '').strip(),
         'end_date': (params.get('end_date') or '').strip(),
+        'approval_status': (params.get('approval_status') or '').strip(),
+        'project_progress': (params.get('project_progress') or '').strip(),
+        'department': (params.get('department') or '').strip(),
+        'submitter_type': (params.get('submitter_type') or '').strip(),
     }
 
 
@@ -113,22 +118,16 @@ def get_report_context(user, params=None):
         extension_records = extension_records.filter(
             Q(proposal__faculty_author=user) | Q(coordinator=user) | Q(team_members=user)
         ).distinct()
-    elif user.is_research_staff:
-        scope_label = 'Research Staff'
-        scope_description = 'Research proposals and research records assigned to you.'
-        proposals = proposals.filter(proposal_type=ProposalType.RESEARCH)
-        research_records = research_records.filter(
-            Q(lead_researcher=user) | Q(co_researchers=user)
-        ).distinct()
-        extension_records = extension_records.none()
-    elif user.is_extension_staff:
-        scope_label = 'Extension Staff'
-        scope_description = 'Extension proposals and extension activities assigned to you.'
-        proposals = proposals.filter(proposal_type=ProposalType.EXTENSION)
+    elif user.is_research_extension_staff:
+        scope_label = 'Research & Extension Staff'
+        scope_description = 'Research and extension proposals awaiting recommendation and approved projects.'
+        proposals = proposals.filter(
+            Q(status=ProposalStatus.PENDING_RECOMMENDATION) |
+            Q(status=ProposalStatus.RECOMMENDED_APPROVAL) |
+            Q(submitted_by=user)
+        )
         research_records = research_records.none()
-        extension_records = extension_records.filter(
-            Q(coordinator=user) | Q(team_members=user)
-        ).distinct()
+        extension_records = extension_records.none()
     else:
         scope_label = 'User'
         scope_description = 'Records available to your account.'
@@ -179,6 +178,20 @@ def get_report_context(user, params=None):
     proposals = _apply_status_filter(proposals, Proposal, filters['status'])
     research_records = _apply_status_filter(research_records, ResearchRecord, filters['status'])
     extension_records = _apply_status_filter(extension_records, ExtensionRecord, filters['status'])
+
+    if filters['approval_status']:
+        proposals = proposals.filter(status=filters['approval_status'])
+
+    if filters['project_progress']:
+        proposals = proposals.filter(project_progress_status=filters['project_progress'])
+
+    if filters['department']:
+        proposals = proposals.filter(faculty_author__department=filters['department'])
+
+    if filters['submitter_type'] == 'faculty_direct':
+        proposals = proposals.filter(submitted_on_behalf=False)
+    elif filters['submitter_type'] == 'staff_on_behalf':
+        proposals = proposals.filter(submitted_on_behalf=True)
 
     start_date = _parse_date(filters['start_date'])
     end_date = _parse_date(filters['end_date'])
@@ -235,6 +248,13 @@ def get_report_context(user, params=None):
         'filter_querystring': _filter_querystring(filters),
         'record_type_choices': RECORD_TYPE_CHOICES,
         'status_choices': _combined_status_choices(),
+        'approval_status_choices': ProposalStatus.choices,
+        'project_progress_choices': ProjectProgressStatus.choices,
+        'department_choices': CustomUser.DEPARTMENT_CHOICES,
+        'submitter_type_choices': [
+            ('faculty_direct', 'Faculty Direct Submission'),
+            ('staff_on_behalf', 'Staff on Behalf of Faculty'),
+        ],
     }
 
 
