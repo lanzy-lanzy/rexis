@@ -237,9 +237,15 @@
                 </span>
                 {% endif %}
                 
-                {% if user.is_admin and proposal.status == 'PENDING' %}
+                {% if user.is_research_extension_staff and proposal.status == 'PENDING_RECOMMENDATION' %}
+                <a href="{% url 'proposal_recommend' proposal.pk %}" class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-semibold rounded-xl shadow-sm text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
+                    Review & Recommend
+                </a>
+                {% endif %}
+
+                {% if user.is_admin and proposal.status == 'RECOMMENDED_APPROVAL' %}
                 <a href="{% url 'proposal_review' proposal.pk %}" class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-semibold rounded-xl shadow-sm text-white bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all">
-                    Review Proposal
+                    Review & Decide
                 </a>
                 {% endif %}
             </div>

@@ -20,6 +20,24 @@ from .forms import ProposalForm, ProposalRecommendationForm, ProposalReviewForm,
 from users.models import CustomUser, UserRole
 
 
+def replace_proposal_requirements(proposal, fixed_keys, custom_labels):
+    proposal.requirements.all().delete()
+    fixed_order = [key for key, _label in PROPOSAL_REQUIREMENT_CHOICES if key in fixed_keys]
+    for key in fixed_order:
+        ProposalRequirement.objects.create(
+            proposal=proposal,
+            requirement_key=key,
+            label=PROPOSAL_REQUIREMENT_LABELS[key],
+        )
+    for index, label in enumerate(custom_labels or [], start=1):
+        ProposalRequirement.objects.create(
+            proposal=proposal,
+            requirement_key=f'custom_{index}',
+            label=label,
+            is_custom=True,
+        )
+
+
 @login_required
 def proposal_list(request: HttpRequest) -> HttpResponse:
     user = request.user
@@ -119,7 +137,7 @@ def proposal_detail(request: HttpRequest, pk: int) -> HttpResponse:
     if (
         user.is_faculty and
         proposal.faculty_author == user and
-        proposal.status == ProposalStatus.REJECTED
+        proposal.status in [ProposalStatus.REJECTED, ProposalStatus.RECOMMENDED_REVISION]
     ):
         resubmission_form = ProposalResubmissionForm(
             requirements=requirements.filter(is_resubmitted=False)
@@ -196,6 +214,14 @@ def proposal_recommend(request: HttpRequest, pk: int) -> HttpResponse:
             proposal.reviewed_by = None
             proposal.reviewed_at = None
             proposal.save()
+            if proposal.status == ProposalStatus.RECOMMENDED_REVISION:
+                replace_proposal_requirements(
+                    proposal,
+                    form.cleaned_data.get('missing_requirements') or [],
+                    form.cleaned_data.get('custom_requirements_list') or [],
+                )
+            elif proposal.status == ProposalStatus.RECOMMENDED_APPROVAL:
+                proposal.requirements.filter(is_resubmitted=False).delete()
             messages.success(request, 'Proposal recommendation submitted.')
             return redirect('proposal_list')
     else:
@@ -228,22 +254,11 @@ def proposal_review(request: HttpRequest, pk: int) -> HttpResponse:
             proposal.reviewed_at = timezone.now()
             proposal.save()
             if proposal.status == ProposalStatus.REJECTED:
-                proposal.requirements.all().delete()
-                fixed_keys = form.cleaned_data.get('missing_requirements') or []
-                fixed_order = [key for key, _label in PROPOSAL_REQUIREMENT_CHOICES if key in fixed_keys]
-                for key in fixed_order:
-                    ProposalRequirement.objects.create(
-                        proposal=proposal,
-                        requirement_key=key,
-                        label=PROPOSAL_REQUIREMENT_LABELS[key],
-                    )
-                for index, label in enumerate(form.cleaned_data.get('custom_requirements_list') or [], start=1):
-                    ProposalRequirement.objects.create(
-                        proposal=proposal,
-                        requirement_key=f'custom_{index}',
-                        label=label,
-                        is_custom=True,
-                    )
+                replace_proposal_requirements(
+                    proposal,
+                    form.cleaned_data.get('missing_requirements') or [],
+                    form.cleaned_data.get('custom_requirements_list') or [],
+                )
             messages.success(request, f'Proposal {proposal.get_status_display()}!')
             return redirect('proposal_list')
     else:

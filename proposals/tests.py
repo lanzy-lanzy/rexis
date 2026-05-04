@@ -362,6 +362,14 @@ class ProposalTwoStageWorkflowViewTests(TestCase):
 
         self.assertRedirects(response, reverse('proposal_detail', args=[self.proposal.pk]))
 
+    def test_staff_detail_page_shows_recommend_action_for_pending_proposal(self):
+        self.client.login(username='workflow-staff-view', password='password')
+
+        response = self.client.get(reverse('proposal_detail', args=[self.proposal.pk]))
+
+        self.assertContains(response, 'Review & Recommend')
+        self.assertContains(response, reverse('proposal_recommend', args=[self.proposal.pk]))
+
     def test_staff_can_recommend_proposal_for_admin_approval(self):
         self.client.login(username='workflow-staff-view', password='password')
 
@@ -394,6 +402,72 @@ class ProposalTwoStageWorkflowViewTests(TestCase):
         self.assertContains(response, 'Recommendation notes are required when requesting revision.')
         self.proposal.refresh_from_db()
         self.assertEqual(self.proposal.status, ProposalStatus.PENDING_RECOMMENDATION)
+
+    def test_staff_revision_requires_missing_requirements(self):
+        self.client.login(username='workflow-staff-view', password='password')
+
+        response = self.client.post(
+            reverse('proposal_recommend', args=[self.proposal.pk]),
+            {
+                'status': ProposalStatus.RECOMMENDED_REVISION,
+                'recommendation_notes': 'Please resubmit the lacking documents.',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Select at least one missing requirement')
+        self.proposal.refresh_from_db()
+        self.assertEqual(self.proposal.status, ProposalStatus.PENDING_RECOMMENDATION)
+        self.assertEqual(self.proposal.requirements.count(), 0)
+
+    def test_staff_revision_stores_missing_requirements_for_resubmission(self):
+        self.client.login(username='workflow-staff-view', password='password')
+
+        response = self.client.post(
+            reverse('proposal_recommend', args=[self.proposal.pk]),
+            {
+                'status': ProposalStatus.RECOMMENDED_REVISION,
+                'recommendation_notes': 'Please upload the workplan and MOA.',
+                'missing_requirements': ['workplan', 'moa'],
+                'custom_requirements': 'Signed department endorsement',
+            },
+        )
+
+        self.assertRedirects(response, reverse('proposal_list'))
+        self.proposal.refresh_from_db()
+        self.assertEqual(self.proposal.status, ProposalStatus.RECOMMENDED_REVISION)
+        self.assertEqual(self.proposal.recommended_by, self.staff)
+        requirements = list(
+            self.proposal.requirements.order_by('created_at').values_list(
+                'requirement_key',
+                'label',
+                'is_custom',
+            )
+        )
+        self.assertEqual(
+            requirements,
+            [
+                ('workplan', 'Workplan', False),
+                ('moa', 'MOA', False),
+                ('custom_1', 'Signed department endorsement', True),
+            ],
+        )
+
+    def test_faculty_sees_upload_fields_for_staff_recommended_revision(self):
+        self.proposal.status = ProposalStatus.RECOMMENDED_REVISION
+        self.proposal.recommendation_notes = 'Please upload the missing workplan.'
+        self.proposal.save()
+        ProposalRequirement.objects.create(
+            proposal=self.proposal,
+            requirement_key='workplan',
+            label='Workplan',
+        )
+        self.client.login(username='workflow-faculty-view', password='password')
+
+        response = self.client.get(reverse('proposal_detail', args=[self.proposal.pk]))
+
+        self.assertContains(response, 'Upload Requested Documents')
+        self.assertContains(response, 'Workplan')
 
     def test_admin_can_approve_after_staff_recommendation(self):
         self.proposal.status = ProposalStatus.RECOMMENDED_APPROVAL

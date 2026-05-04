@@ -130,6 +130,21 @@ class ProposalRecommendationForm(forms.ModelForm):
             'class': 'h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500'
         })
     )
+    missing_requirements = forms.MultipleChoiceField(
+        choices=PROPOSAL_REQUIREMENT_CHOICES,
+        required=False,
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'class': 'h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500'
+        })
+    )
+    custom_requirements = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none',
+            'rows': 3,
+            'placeholder': 'Add one custom requirement per line'
+        })
+    )
 
     class Meta:
         model = Proposal
@@ -146,8 +161,17 @@ class ProposalRecommendationForm(forms.ModelForm):
         cleaned_data = super().clean()
         status = cleaned_data.get('status')
         notes = (cleaned_data.get('recommendation_notes') or '').strip()
+        missing_requirements = cleaned_data.get('missing_requirements') or []
+        custom_requirements = [
+            line.strip()
+            for line in (cleaned_data.get('custom_requirements') or '').splitlines()
+            if line.strip()
+        ]
         if status == ProposalStatus.RECOMMENDED_REVISION and not notes:
             self.add_error('recommendation_notes', 'Recommendation notes are required when requesting revision.')
+        if status == ProposalStatus.RECOMMENDED_REVISION and not missing_requirements and not custom_requirements:
+            self.add_error('missing_requirements', 'Select at least one missing requirement or add a custom requirement.')
+        cleaned_data['custom_requirements_list'] = custom_requirements
         return cleaned_data
 
 
