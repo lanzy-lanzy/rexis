@@ -1,0 +1,187 @@
+<div x-data="universalDocumentPreview()"
+     @open-document-preview.window="open($event.detail.url, $event.detail.title)"
+     @keydown.escape.window="close()"
+     class="relative z-[100]"
+     x-cloak>
+    <template x-if="isOpen">
+        <div class="fixed inset-0 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" @click="close()"></div>
+            <div class="relative z-10 w-full max-w-6xl h-[92vh] overflow-hidden rounded-2xl bg-white shadow-2xl border border-white/20 flex flex-col">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-5 py-4 border-b border-slate-200 bg-white">
+                    <div class="min-w-0">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400" x-text="previewLabel"></p>
+                        <h3 class="text-lg font-extrabold text-slate-900 truncate" x-text="title"></h3>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <template x-if="type === 'pdf' && !fallback">
+                            <div class="hidden sm:flex items-center gap-1 rounded-lg bg-slate-100 p-1">
+                                <button type="button" @click="zoomOut()" class="p-2 rounded-md text-slate-600 hover:bg-white hover:text-slate-900" title="Zoom out">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+                                </button>
+                                <span class="min-w-12 text-center text-xs font-bold text-slate-600" x-text="Math.round(scale * 100) + '%'"></span>
+                                <button type="button" @click="zoomIn()" class="p-2 rounded-md text-slate-600 hover:bg-white hover:text-slate-900" title="Zoom in">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                </button>
+                            </div>
+                        </template>
+                        <a :href="url" target="_blank" class="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-blue-50 text-blue-700 text-sm font-bold hover:bg-blue-100">Open</a>
+                        <a :href="url" download class="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-bold hover:bg-slate-200">Download</a>
+                        <button type="button" @click="close()" class="inline-flex items-center justify-center w-10 h-10 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600" title="Close">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-auto bg-slate-100 p-4 md:p-6">
+                    <template x-if="loading">
+                        <div class="h-full min-h-[60vh] flex flex-col items-center justify-center text-slate-500">
+                            <div class="w-10 h-10 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mb-3"></div>
+                            <p class="text-sm font-bold">Loading preview...</p>
+                        </div>
+                    </template>
+
+                    <template x-if="error">
+                        <div class="max-w-md mx-auto mt-12 rounded-xl bg-white border border-red-100 p-6 text-center shadow-sm">
+                            <p class="text-base font-bold text-slate-900">Preview unavailable</p>
+                            <p class="text-sm text-slate-500 mt-2" x-text="errorMessage"></p>
+                            <a :href="url" target="_blank" class="inline-flex mt-5 px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-bold hover:bg-slate-800">Open file</a>
+                        </div>
+                    </template>
+
+                    <template x-if="type === 'image' && !loading && !error">
+                        <div class="min-h-[65vh] flex items-center justify-center">
+                            <img :src="url" :alt="title" class="max-w-full max-h-[78vh] rounded-xl bg-white shadow-lg object-contain">
+                        </div>
+                    </template>
+
+                    <template x-if="type === 'pdf' && !loading && !error && !fallback">
+                        <div id="universal-pdf-pages" class="mx-auto flex max-w-5xl flex-col items-center gap-5"></div>
+                    </template>
+
+                    <template x-if="(type === 'document' || fallback) && !loading && !error">
+                        <iframe :src="iframeUrl" class="w-full h-full min-h-[72vh] rounded-xl bg-white shadow" title="Document preview"></iframe>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script>
+    if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    }
+
+    function universalDocumentPreview() {
+        return {
+            isOpen: false,
+            url: '',
+            title: '',
+            type: 'document',
+            iframeUrl: '',
+            loading: false,
+            error: false,
+            fallback: false,
+            errorMessage: '',
+            scale: 1.15,
+            pdfDoc: null,
+            get previewLabel() {
+                if (this.type === 'image') return 'Image Preview';
+                if (this.type === 'pdf' && !this.fallback) return 'PDF Preview';
+                return 'Document Preview';
+            },
+            async open(url, title) {
+                this.isOpen = true;
+                this.url = url;
+                this.title = title || 'Document';
+                this.type = this.detectType(url);
+                this.iframeUrl = this.buildIframeUrl(url);
+                this.loading = this.type === 'pdf';
+                this.error = false;
+                this.fallback = false;
+                this.pdfDoc = null;
+                this.clearPdfPages();
+
+                if (this.type !== 'pdf') {
+                    this.loading = false;
+                    return;
+                }
+
+                await this.loadPdf();
+            },
+            detectType(url) {
+                const cleanUrl = (url || '').split('?')[0].split('#')[0].toLowerCase();
+                if (cleanUrl.match(/\.(png|jpe?g|gif|webp|bmp|svg)$/)) return 'image';
+                if (cleanUrl.endsWith('.pdf')) return 'pdf';
+                return 'document';
+            },
+            buildIframeUrl(url) {
+                return (url || '').includes('#') ? url : `${url}#view=FitH`;
+            },
+            async loadPdf() {
+                try {
+                    if (!window.pdfjsLib || !pdfjsLib.getDocument) {
+                        this.fallback = true;
+                        this.loading = false;
+                        return;
+                    }
+                    const absoluteUrl = new URL(this.url, window.location.origin).href;
+                    const response = await fetch(absoluteUrl);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const blob = await response.blob();
+                    if (!blob.size) throw new Error('The file is empty.');
+                    const data = new Uint8Array(await blob.arrayBuffer());
+                    this.pdfDoc = await pdfjsLib.getDocument({ data }).promise;
+                    this.loading = false;
+                    await this.renderAllPages();
+                } catch (err) {
+                    this.loading = false;
+                    this.fallback = true;
+                    this.iframeUrl = this.buildIframeUrl(this.url);
+                }
+            },
+            async renderAllPages() {
+                this.clearPdfPages();
+                if (!this.pdfDoc) return;
+                for (let pageNumber = 1; pageNumber <= this.pdfDoc.numPages; pageNumber += 1) {
+                    await this.renderPage(pageNumber);
+                }
+            },
+            async renderPage(pageNumber) {
+                const container = document.getElementById('universal-pdf-pages');
+                if (!container) return;
+                const page = await this.pdfDoc.getPage(pageNumber);
+                const viewport = page.getViewport({ scale: this.scale });
+                const wrapper = document.createElement('div');
+                wrapper.className = 'relative overflow-hidden rounded-sm bg-white shadow-lg';
+                const canvas = document.createElement('canvas');
+                canvas.className = 'max-w-full h-auto';
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                wrapper.appendChild(canvas);
+                container.appendChild(wrapper);
+                await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+            },
+            zoomIn() {
+                if (this.scale >= 2.5 || !this.pdfDoc) return;
+                this.scale += 0.15;
+                this.renderAllPages();
+            },
+            zoomOut() {
+                if (this.scale <= 0.55 || !this.pdfDoc) return;
+                this.scale -= 0.15;
+                this.renderAllPages();
+            },
+            clearPdfPages() {
+                const container = document.getElementById('universal-pdf-pages');
+                if (container) container.innerHTML = '';
+            },
+            close() {
+                this.isOpen = false;
+                this.clearPdfPages();
+                this.pdfDoc = null;
+            }
+        };
+    }
+</script>

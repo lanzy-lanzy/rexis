@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Proposal
+from .models import Proposal, ProposalTrackingEvent
 
 
 @admin.register(Proposal)
@@ -27,3 +27,12 @@ class ProposalAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+
+@admin.register(ProposalTrackingEvent)
+class ProposalTrackingEventAdmin(admin.ModelAdmin):
+    list_display = ('proposal', 'event_type', 'status', 'actor', 'created_at')
+    list_filter = ('event_type', 'status', 'created_at')
+    search_fields = ('proposal__title', 'title', 'description', 'actor__username')
+    readonly_fields = ('created_at',)
+    date_hierarchy = 'created_at'

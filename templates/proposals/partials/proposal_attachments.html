@@ -1,0 +1,76 @@
+{% with docs=documents|default:document_statuses %}
+<section x-data class="border border-slate-200 bg-white rounded-xl overflow-hidden">
+    <div class="px-5 py-4 border-b border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+            <h2 class="text-base font-extrabold text-slate-900">All Proposal Documents</h2>
+            <p class="text-sm text-slate-500">Preview and download submitted files, including status-specific requirements.</p>
+        </div>
+        {% if docs %}
+        <span class="inline-flex w-fit rounded-full bg-white border border-slate-200 px-3 py-1 text-xs font-bold text-slate-600">
+            {{ docs|length }} tracked
+        </span>
+        {% endif %}
+    </div>
+
+    {% if docs %}
+    <div class="divide-y divide-slate-100">
+        {% for document in docs %}
+        {% if show_all_documents or document.required or document.uploaded %}
+        <div class="px-5 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-start gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0
+                    {% if document.state == 'uploaded' %}bg-emerald-50 text-emerald-700
+                    {% elif document.state == 'missing' %}bg-red-50 text-red-700
+                    {% else %}bg-slate-100 text-slate-500{% endif %}">
+                    {% if document.uploaded %}
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6-2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2h7l5 5z"></path></svg>
+                    {% else %}
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6M7 3h7l5 5v11a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"></path></svg>
+                    {% endif %}
+                </div>
+                <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <p class="text-sm font-bold text-slate-900">{{ document.label }}</p>
+                        <span class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold border
+                            {% if document.state == 'uploaded' %}bg-emerald-50 text-emerald-700 border-emerald-100
+                            {% elif document.state == 'missing' %}bg-red-50 text-red-700 border-red-100
+                            {% else %}bg-slate-50 text-slate-600 border-slate-200{% endif %}">
+                            {{ document.state_label }}
+                        </span>
+                        {% if document.required %}
+                        <span class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">Required</span>
+                        {% else %}
+                        <span class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-200">Optional</span>
+                        {% endif %}
+                    </div>
+                    {% if document.uploaded %}
+                    <p class="mt-1 text-xs text-slate-500 truncate">{{ document.file.name }}</p>
+                    {% else %}
+                    <p class="mt-1 text-xs text-slate-400">No file uploaded yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:justify-end">
+                {% if document.uploaded %}
+                <button type="button"
+                        @click="$dispatch('open-document-preview', { url: '{{ document.file.url }}', title: '{{ document.label|escapejs }}' })"
+                        class="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-blue-50 text-blue-700 text-xs font-extrabold hover:bg-blue-100">
+                    Preview {{ document.label }}
+                </button>
+                <a href="{{ document.file.url }}" download class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" title="Download {{ document.label }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                </a>
+                {% else %}
+                <span class="text-xs font-semibold text-slate-400">Awaiting upload</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="px-5 py-8 text-center text-sm text-slate-500">No tracked documents are available for this proposal.</div>
+    {% endif %}
+</section>
+{% endwith %}

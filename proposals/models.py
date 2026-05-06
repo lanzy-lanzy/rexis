@@ -14,11 +14,23 @@ class ProjectProgressStatus(models.TextChoices):
     ONGOING = 'ONGOING', 'Ongoing'
     PRESENTED = 'PRESENTED', 'Presented'
     COMPLETED = 'COMPLETED', 'Completed'
+    PUBLISHED = 'PUBLISHED', 'Published'
 
 
 class ProposalType(models.TextChoices):
     RESEARCH = 'RESEARCH', 'Research'
     EXTENSION = 'EXTENSION', 'Extension'
+
+
+class ProposalTrackingEventType(models.TextChoices):
+    SUBMITTED = 'SUBMITTED', 'Submitted'
+    DOCUMENTS_UPLOADED = 'DOCUMENTS_UPLOADED', 'Documents Uploaded'
+    RECOMMENDED_APPROVAL = 'RECOMMENDED_APPROVAL', 'Recommended for Approval'
+    REVISION_REQUESTED = 'REVISION_REQUESTED', 'Revision Requested'
+    ADMIN_APPROVED = 'ADMIN_APPROVED', 'Approved by Admin'
+    ADMIN_REJECTED = 'ADMIN_REJECTED', 'Rejected by Admin'
+    RESUBMITTED = 'RESUBMITTED', 'Resubmitted'
+    UPDATED = 'UPDATED', 'Updated'
 
 
 PROPOSAL_REQUIREMENT_CHOICES = [
@@ -99,6 +111,13 @@ class Proposal(models.Model):
         choices=ProjectProgressStatus.choices,
         blank=True
     )
+    progress_report = models.FileField(upload_to='proposals/progress_reports/', blank=True, null=True)
+    abstract_document = models.FileField(upload_to='proposals/abstracts/', blank=True, null=True)
+    certificate_of_appearance = models.FileField(upload_to='proposals/certificates/', blank=True, null=True)
+    certificate_of_participation = models.FileField(upload_to='proposals/certificates/', blank=True, null=True)
+    conference_proceedings = models.FileField(upload_to='proposals/proceedings/', blank=True, null=True)
+    full_paper = models.FileField(upload_to='proposals/full_papers/', blank=True, null=True)
+    certificate_of_publication = models.FileField(upload_to='proposals/certificates/', blank=True, null=True)
 
     class Meta:
         ordering = ['-date_submitted']
@@ -157,3 +176,40 @@ class ProposalRequirement(models.Model):
 
     def __str__(self):
         return f"{self.proposal.title} - {self.label}"
+
+
+class ProposalTrackingEvent(models.Model):
+    proposal = models.ForeignKey(
+        Proposal,
+        on_delete=models.CASCADE,
+        related_name='tracking_events'
+    )
+    event_type = models.CharField(
+        max_length=40,
+        choices=ProposalTrackingEventType.choices
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    status = models.CharField(
+        max_length=30,
+        choices=ProposalStatus.choices,
+        blank=True
+    )
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='proposal_tracking_events'
+    )
+    document_label = models.CharField(max_length=255, blank=True)
+    document_url = models.CharField(max_length=500, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at', '-id']
+        verbose_name = 'Proposal Tracking Event'
+        verbose_name_plural = 'Proposal Tracking Events'
+
+    def __str__(self):
+        return f"{self.proposal.title} - {self.title}"

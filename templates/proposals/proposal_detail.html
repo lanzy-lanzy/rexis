@@ -38,6 +38,7 @@
             </div>
         </div>
         
+        {% if show_submission_narrative %}
         <div class="mb-6">
             <h2 class="text-lg font-semibold mb-2">Abstract</h2>
             <p class="text-gray-700 whitespace-pre-line">{{ proposal.abstract }}</p>
@@ -47,44 +48,11 @@
             <h2 class="text-lg font-semibold mb-2">Full Description</h2>
             <p class="text-gray-700 whitespace-pre-line">{{ proposal.full_description }}</p>
         </div>
-        
-        {% if proposal.proposal_document or proposal.budget_pdf or proposal.supporting_image %}
-        <div class="mb-6">
-            <h2 class="text-lg font-semibold mb-2">Documents</h2>
-            <div class="flex flex-wrap gap-4">
-                {% if proposal.proposal_document %}
-                <div x-data @click="$dispatch('open-pdf-preview', { url: '{{ proposal.proposal_document.url }}', title: 'Proposal Document' })"
-                     class="flex items-center px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                    </svg>
-                    Preview Document
-                </div>
-                {% endif %}
-                
-                {% if proposal.budget_pdf %}
-                <div x-data @click="$dispatch('open-pdf-preview', { url: '{{ proposal.budget_pdf.url }}', title: 'Budget PDF' })"
-                     class="flex items-center px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                    </svg>
-                    Preview Budget
-                </div>
-                {% endif %}
-                
-                {% if proposal.supporting_image %}
-                <a href="{{ proposal.supporting_image.url }}" target="_blank" class="flex items-center px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                    Supporting Image
-                </a>
-                {% endif %}
-            </div>
-        </div>
         {% endif %}
+        
+        <div class="mb-6">
+            {% include 'proposals/partials/proposal_attachments.html' with documents=document_statuses show_all_documents=True %}
+        </div>
 
         <!-- Document Version History -->
         {% if document_versions %}
@@ -114,7 +82,7 @@
                     </div>
                     <div class="flex items-center gap-1 flex-shrink-0">
                         {% if version.document.name|lower|slice:"-4:" == ".pdf" %}
-                        <button @click="$dispatch('open-pdf-preview', { url: '{{ version.document.url }}', title: 'v{{ version.version_number }}' })"
+                        <button @click="$dispatch('open-document-preview', { url: '{{ version.document.url }}', title: 'v{{ version.version_number }}' })"
                             class="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="Preview">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                         </button>
@@ -128,6 +96,8 @@
             </div>
         </div>
         {% endif %}
+
+        {% include 'proposals/partials/proposal_tracking_timeline.html' %}
         
         {% if proposal.recommended_by or proposal.status == 'RECOMMENDED_REVISION' or proposal.status == 'RECOMMENDED_APPROVAL' %}
         <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
@@ -212,6 +182,8 @@
         </div>
     </div>
 </div>
+
+{% include 'proposals/partials/universal_document_preview.html' %}
 
 <!-- PDF Preview Modal -->
 <div x-data="pdfViewer()"

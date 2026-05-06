@@ -4,51 +4,56 @@
 
 {% block content %}
 <div data-dashboard-shell data-dashboard-variant="executive-clean" class="max-w-7xl mx-auto space-y-6">
-    <section class="rounded-lg bg-slate-900 text-white p-6">
+    <section class="rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 text-white p-6 shadow-xl border border-slate-700/50">
         <p class="text-sm uppercase tracking-wider text-slate-300">Operational summary</p>
-        <h1 class="text-2xl font-bold mt-1">Research & Extension Workspace</h1>
+        <h1 class="text-2xl md:text-3xl font-bold mt-1">Research & Extension Workspace</h1>
         <p class="text-slate-300 mt-2">Review faculty proposals before admin approval and monitor approved project progress.</p>
     </section>
 
     <section class="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div class="metric-card bg-white border border-slate-200 rounded-lg p-4">
+        <div class="metric-card bg-white border border-slate-200/60 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-shadow">
             <p class="text-xs font-bold uppercase text-slate-500">Pending Recommendations</p>
-            <p class="text-2xl font-bold text-slate-900">{{ total_pending_recommendations }}</p>
+            <p class="text-2xl font-bold text-slate-900 mt-2">{{ total_pending_recommendations }}</p>
         </div>
-        <div class="metric-card bg-white border border-slate-200 rounded-lg p-4">
+        <div class="metric-card bg-white border border-slate-200/60 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-shadow">
             <p class="text-xs font-bold uppercase text-slate-500">Recommended For Admin</p>
-            <p class="text-2xl font-bold text-slate-900">{{ total_recommended_for_admin }}</p>
+            <p class="text-2xl font-bold text-slate-900 mt-2">{{ total_recommended_for_admin }}</p>
         </div>
-        <div class="metric-card bg-white border border-slate-200 rounded-lg p-4">
+        <div class="metric-card bg-white border border-slate-200/60 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-shadow">
             <p class="text-xs font-bold uppercase text-slate-500">Ongoing</p>
-            <p class="text-2xl font-bold text-slate-900">{{ ongoing_projects }}</p>
+            <p class="text-2xl font-bold text-slate-900 mt-2">{{ ongoing_projects }}</p>
         </div>
-        <div class="metric-card bg-white border border-slate-200 rounded-lg p-4">
+        <div class="metric-card bg-white border border-slate-200/60 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-shadow">
             <p class="text-xs font-bold uppercase text-slate-500">Presented</p>
-            <p class="text-2xl font-bold text-slate-900">{{ presented_projects }}</p>
+            <p class="text-2xl font-bold text-slate-900 mt-2">{{ presented_projects }}</p>
         </div>
-        <div class="metric-card bg-white border border-slate-200 rounded-lg p-4">
+        <div class="metric-card bg-white border border-slate-200/60 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-shadow">
             <p class="text-xs font-bold uppercase text-slate-500">Completed</p>
-            <p class="text-2xl font-bold text-slate-900">{{ completed_projects }}</p>
+            <p class="text-2xl font-bold text-slate-900 mt-2">{{ completed_projects }}</p>
         </div>
     </section>
 
-    <section class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-        <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+    <section class="bg-white border border-slate-200/60 rounded-2xl overflow-hidden shadow-lg">
+        <div class="px-6 py-4 border-b border-slate-200/60 flex items-center justify-between">
             <h2 class="font-bold text-slate-900">Pending Recommendations</h2>
-            <a href="{% url 'proposal_create' %}" class="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-semibold">Submit on Behalf</a>
+            <a href="{% url 'proposal_create' %}" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 text-white text-sm font-semibold shadow-lg transition hover:from-slate-800 hover:to-slate-700">Submit on Behalf</a>
         </div>
-        <div class="divide-y divide-slate-100">
+        <div class="divide-y divide-slate-100/80">
             {% for proposal in pending_recommendations %}
-            <div class="px-5 py-4 flex items-center justify-between gap-4">
+            <div class="px-6 py-4 flex items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors">
                 <div>
                     <p class="font-semibold text-slate-800">{{ proposal.title }}</p>
                     <p class="text-xs text-slate-500">{{ proposal.faculty_author.get_full_name|default:proposal.faculty_author.username }}</p>
                 </div>
-                <a href="{% url 'proposal_recommend' proposal.pk %}" class="px-3 py-2 rounded-lg bg-blue-50 text-blue-700 text-sm font-semibold">Recommend</a>
+                <a href="{% url 'proposal_recommend' proposal.pk %}" class="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 text-sm font-semibold border border-blue-200/60 hover:from-blue-100 hover:to-blue-200 transition">Recommend</a>
             </div>
             {% empty %}
-            <p class="px-5 py-8 text-sm text-slate-500">No proposals are waiting for recommendation.</p>
+            <div class="px-6 py-12 text-center">
+                <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-400 mb-3">
+                    <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+                <p class="text-sm font-semibold text-slate-700">No proposals are waiting for recommendation.</p>
+            </div>
             {% endfor %}
         </div>
     </section>

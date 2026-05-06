@@ -93,46 +93,69 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        <!-- Main Form Column -->
-        <div class="lg:col-span-2 space-y-6">
+    <!-- Stepper - Full Width -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mb-6">
+        <div class="flex items-center justify-between relative">
+            <div class="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-100 -translate-y-1/2"></div>
+            <div class="absolute top-1/2 left-0 h-0.5 bg-blue-600 -translate-y-1/2 transition-all duration-500"
+                 :style="`width: ${(currentStep - 1) * 50}%`"></div>
 
-            <!-- Stepper -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                <div class="flex items-center justify-between relative">
-                    <!-- Connecting line background -->
-                    <div class="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-100 -translate-y-1/2"></div>
-                    <!-- Active connecting line -->
-                    <div class="absolute top-1/2 left-0 h-0.5 bg-blue-600 -translate-y-1/2 transition-all duration-500"
-                         :style="`width: ${(currentStep - 1) * 50}%`"></div>
-
-                    <template x-for="step in steps" :key="step.id">
-                        <div class="relative z-10 flex flex-col items-center cursor-pointer"
-                             @click="goToStep(step.id)">
-                            <div class="relative w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold transition-all duration-300 border-2"
-                                 :class="stepCircleClass(step.id)">
-                                <template x-if="currentStep > step.id">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
-                                    </svg>
-                                </template>
-                                <template x-if="currentStep <= step.id">
-                                    <span x-text="step.id"></span>
-                                </template>
-                            </div>
-                            <span class="mt-2 text-xs font-semibold transition-colors duration-300"
-                                  :class="currentStep >= step.id ? 'text-slate-800' : 'text-slate-400'"
-                                  x-text="step.label"></span>
-                        </div>
-                    </template>
+            <template x-for="step in steps" :key="step.id">
+                <div class="relative z-10 flex flex-col items-center cursor-pointer"
+                     @click="goToStep(step.id)">
+                    <div class="relative w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold transition-all duration-300 border-2"
+                         :class="stepCircleClass(step.id)">
+                        <template x-if="currentStep > step.id">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </template>
+                        <template x-if="currentStep <= step.id">
+                            <span x-text="step.id"></span>
+                        </template>
+                    </div>
+                    <span class="mt-2 text-xs font-semibold transition-colors duration-300"
+                          :class="currentStep >= step.id ? 'text-slate-800' : 'text-slate-400'"
+                          x-text="step.label"></span>
                 </div>
-            </div>
+            </template>
+        </div>
+    </div>
 
-            <!-- Form Card -->
+    <!-- Main Content Grid: Form (Left) + Status Sidebar (Right) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <!-- Left Column: Form Fields -->
+        <div class="lg:col-span-2">
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <form method="post" enctype="multipart/form-data" id="proposalForm"
-                      @submit="return validateBeforeSubmit()">
+                      @submit="handleSubmit($event)">
                     {% csrf_token %}
+                    {% if form.errors %}
+                    <div class="mx-6 sm:mx-8 mt-6 flex items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-700">
+                        <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <div>
+                            <p class="font-semibold text-red-800">The proposal was not submitted.</p>
+                            <ul class="mt-1 list-disc pl-4 space-y-0.5">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                    <li>{{ field.label }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div x-show="submitErrorMessage" x-cloak class="mx-6 sm:mx-8 mt-6 flex items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-700">
+                        <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <p class="font-semibold" x-text="submitErrorMessage"></p>
+                    </div>
 
                     <!-- STEP 1: Basic Information -->
                     <div x-show="currentStep === 1"
@@ -249,16 +272,18 @@
                             </div>
                             <div>
                                 <h2 class="text-lg font-bold text-slate-900">Proposal Details</h2>
-                                <p class="text-xs text-slate-500">Describe your proposal thoroughly for reviewers</p>
+                                <p class="text-xs text-slate-500" x-text="projectStatus === 'ONGOING' ? 'Describe your proposal thoroughly for reviewers' : 'Provide additional project details'"></p>
                             </div>
                         </div>
 
+                        {% if form.abstract %}
                         <!-- Abstract -->
                         <div :class="shakeAbstract && 'animate-shake'"
                              @animationend="shakeAbstract = false">
                             <div class="flex items-center justify-between mb-1.5">
                                 <label for="id_abstract" class="block text-sm font-semibold text-slate-700">
-                                    Abstract <span class="text-red-500">*</span>
+                                    Abstract <span x-show="projectStatus !== 'ONGOING'" class="text-red-500">*</span>
+                                    <span x-show="projectStatus === 'ONGOING'" class="text-slate-400 font-normal">(optional)</span>
                                 </label>
                                 <span class="text-xs font-medium px-2 py-0.5 rounded-full transition-colors"
                                       :class="abstractText.length >= 50 ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'">
@@ -274,9 +299,10 @@
                             {% endif %}
                             <p class="text-xs text-slate-400 mt-1.5">Provide a concise summary of at least 50 characters.</p>
                         </div>
+                        {% endif %}
 
-                        <!-- Full Description -->
-                        <div>
+                        <!-- Full Description - Only for ONGOING -->
+                        <div x-show="projectStatus === 'ONGOING'">
                             <label for="id_full_description" class="block text-sm font-semibold text-slate-700 mb-1.5">
                                 Full Description <span class="text-red-500">*</span>
                             </label>
@@ -308,7 +334,7 @@
                         </div>
                     </div>
 
-                    <!-- STEP 3: Documents -->
+<!-- STEP 3: Documents -->
                     <div x-show="currentStep === 3"
                          x-transition:enter="transition ease-out duration-300"
                          x-transition:enter-start="opacity-0 translate-y-3"
@@ -316,233 +342,467 @@
                          class="p-6 sm:p-8 space-y-6"
                          x-cloak>
 
-                        <div class="flex items-center gap-3 mb-2">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h2 class="text-lg font-bold text-slate-900">Attachments</h2>
-                                <p class="text-xs text-slate-500">Upload supporting documents (all optional but recommended)</p>
-                            </div>
-                        </div>
+                         <div class="flex items-center gap-3 mb-2">
+                             <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                 </svg>
+                             </div>
+                             <div>
+                                 <h2 class="text-lg font-bold text-slate-900">Attachments</h2>
+                                 <p class="text-xs text-slate-500">Upload required documents based on your project status</p>
+                             </div>
+                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <!-- Proposal Document -->
-                            <div class="relative file-drop-zone rounded-2xl p-5 text-center group"
-                                 :class="files.proposal_document ? 'bg-blue-50/60 border-blue-300' : 'bg-slate-50/60'"
-                                 x-data="{ hover: false }"
-                                 @dragenter.prevent="hover = true"
-                                 @dragleave.prevent="hover = false"
-                                 @dragover.prevent
-                                 @drop.prevent="handleDrop($event, 'proposal_document')"
-                                 :class="hover && 'drag-over'">
+                         <!-- Dynamic Document Upload Fields based on Status -->
+                         <!-- Proposal Document - Only for ONGOING -->
+                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" x-show="projectStatus === 'ONGOING'">
+                             <!-- Proposal Document -->
+                             <div class="relative file-drop-zone rounded-2xl p-5 text-center group"
+                                  :class="(files.proposal_document ? 'bg-blue-50/60 border-blue-300' : 'bg-slate-50/60') + (isRequired('proposal_document') && !files.proposal_document ? ' ring-2 ring-red-300' : '')"
+                                  x-data="{ hover: false }"
+                                  @dragenter.prevent="hover = true"
+                                  @dragleave.prevent="hover = false"
+                                  @dragover.prevent
+                                  @drop.prevent="handleDrop($event, 'proposal_document')"
+                                  :class="hover && 'drag-over'">
 
-                                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3 transition-transform group-hover:scale-110">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                </div>
-                                <h4 class="text-sm font-bold text-slate-800">Proposal</h4>
-                                <p class="text-xs text-slate-400 mt-0.5 mb-3">PDF, DOC, DOCX</p>
+                                 <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3 transition-transform group-hover:scale-110">
+                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                     </svg>
+                                 </div>
+                                 <h4 class="text-sm font-bold text-slate-800">Proposal Document <span x-show="isRequired('proposal_document')" class="text-red-500">*</span></h4>
+                                 <p class="text-xs text-slate-400 mt-0.5 mb-3">PDF, DOC, DOCX</p>
 
-                                <template x-if="!files.proposal_document">
-                                    <button type="button" class="relative inline-flex items-center px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm">
-                                        Choose file
-                                        <input type="file" name="proposal_document" id="id_proposal_document"
-                                               class="hidden-file-input"
-                                               accept=".pdf,.doc,.docx"
-                                               @change="handleFileChange($event, 'proposal_document')">
-                                    </button>
-                                </template>
-                                <template x-if="files.proposal_document">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="text-xs font-medium text-blue-700 truncate max-w-[120px]" x-text="files.proposal_document.name"></span>
-                                        <button type="button" @click="clearFile('proposal_document')" class="text-slate-400 hover:text-red-500 transition-colors">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                        </button>
-                                    </div>
-                                </template>
+                                 <div x-show="!files.proposal_document">
+                                     <button type="button" class="relative inline-flex items-center px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm">
+                                         Choose file
+                                         <input type="file" name="proposal_document" id="id_proposal_document"
+                                                 class="hidden-file-input"
+                                                 accept=".pdf,.doc,.docx"
+                                                 @change="handleFileChange($event, 'proposal_document')">
+                                     </button>
+                                  </div>
+                                  <div x-show="files.proposal_document">
+                                      <div class="flex items-center justify-center gap-2">
+                                          <span class="text-xs font-medium text-blue-700 truncate max-w-[120px]" x-text="files.proposal_document.name"></span>
+                                          <button type="button" @click="clearFile('proposal_document')" class="text-slate-400 hover:text-red-500 transition-colors">
+                                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                          </button>
+                                      </div>
+                                  </div>
+                             </div>
 
-                                {% if form.proposal_document.errors %}
-                                <p class="text-red-500 text-xs mt-2">{{ form.proposal_document.errors.0 }}</p>
-                                {% endif %}
-                            </div>
+<!-- Always available: Budget PDF -->
+                             <div class="relative file-drop-zone rounded-2xl p-5 text-center group"
+                                  :class="(files.budget_pdf ? 'bg-emerald-50/60 border-emerald-300' : 'bg-slate-50/60') + (isRequired('budget_pdf') && !files.budget_pdf ? ' ring-2 ring-red-300' : '')"
+                                  x-show="projectStatus === 'ONGOING'"
+                                  x-data="{ hover: false }"
+                                  @dragenter.prevent="hover = true"
+                                  @dragleave.prevent="hover = false"
+                                  @dragover.prevent
+                                  @drop.prevent="handleDrop($event, 'budget_pdf')"
+                                  :class="hover && 'drag-over'">
 
-                            <!-- Budget PDF -->
-                            <div class="relative file-drop-zone rounded-2xl p-5 text-center group"
-                                 :class="files.budget_pdf ? 'bg-emerald-50/60 border-emerald-300' : 'bg-slate-50/60'"
-                                 x-data="{ hover: false }"
-                                 @dragenter.prevent="hover = true"
-                                 @dragleave.prevent="hover = false"
-                                 @dragover.prevent
-                                 @drop.prevent="handleDrop($event, 'budget_pdf')"
-                                 :class="hover && 'drag-over'">
+                                 <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-3 transition-transform group-hover:scale-110">
+                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                     </svg>
+                                 </div>
+                                 <h4 class="text-sm font-bold text-slate-800">Budget PDF <span x-show="isRequired('budget_pdf')" class="text-red-500">*</span></h4>
+                                 <p class="text-xs text-slate-400 mt-0.5 mb-3">PDF only</p>
 
-                                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-3 transition-transform group-hover:scale-110">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                    </svg>
-                                </div>
-                                <h4 class="text-sm font-bold text-slate-800">Budget</h4>
-                                <p class="text-xs text-slate-400 mt-0.5 mb-3">PDF only</p>
+                                  <div x-show="!files.budget_pdf">
+                                      <button type="button" class="relative inline-flex items-center px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50 transition-all shadow-sm">
+                                          Choose file
+                                          <input type="file" name="budget_pdf" id="id_budget_pdf"
+                                                 class="hidden-file-input"
+                                                 accept=".pdf"
+                                                 @change="handleFileChange($event, 'budget_pdf')">
+                                      </button>
+                                  </div>
+                                  <div x-show="files.budget_pdf">
+                                      <div class="flex items-center justify-center gap-2">
+                                          <span class="text-xs font-medium text-emerald-700 truncate max-w-[120px]" x-text="files.budget_pdf.name"></span>
+                                          <button type="button" @click="clearFile('budget_pdf')" class="text-slate-400 hover:text-red-500 transition-colors">
+                                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                          </button>
+                                      </div>
+                                  </div>
+                             </div>
+                         </div>
 
-                                <template x-if="!files.budget_pdf">
-                                    <button type="button" class="relative inline-flex items-center px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50 transition-all shadow-sm">
-                                        Choose file
-                                        <input type="file" name="budget_pdf" id="id_budget_pdf"
-                                               class="hidden-file-input"
-                                               accept=".pdf"
-                                               @change="handleFileChange($event, 'budget_pdf')">
-                                    </button>
-                                </template>
-                                <template x-if="files.budget_pdf">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="text-xs font-medium text-emerald-700 truncate max-w-[120px]" x-text="files.budget_pdf.name"></span>
-                                        <button type="button" @click="clearFile('budget_pdf')" class="text-slate-400 hover:text-red-500 transition-colors">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                        </button>
-                                    </div>
-                                </template>
+                         <!-- Status-specific Document Upload Fields -->
+                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" x-show="projectStatus === 'COMPLETED'">
+                             <!-- Progress Report -->
+                             <div class="relative file-drop-zone rounded-2xl p-5 text-center group"
+                                  :class="(files.progress_report ? 'bg-amber-50/60 border-amber-300' : 'bg-slate-50/60') + (isRequired('progress_report') && !files.progress_report ? ' ring-2 ring-red-300' : '')"
+                                  x-data="{ hover: false }"
+                                  @dragenter.prevent="hover = true"
+                                  @dragleave.prevent="hover = false"
+                                  @dragover.prevent
+                                  @drop.prevent="handleDrop($event, 'progress_report')"
+                                  :class="hover && 'drag-over'">
 
-                                {% if form.budget_pdf.errors %}
-                                <p class="text-red-500 text-xs mt-2">{{ form.budget_pdf.errors.0 }}</p>
-                                {% endif %}
-                            </div>
+                                 <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center mx-auto mb-3 transition-transform group-hover:scale-110">
+                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                     </svg>
+                                 </div>
+                                 <h4 class="text-sm font-bold text-slate-800">Progress/Terminal Report <span x-show="isRequired('progress_report')" class="text-red-500">*</span></h4>
+                                 <p class="text-xs text-slate-400 mt-0.5 mb-3">PDF, DOCX</p>
 
-                            <!-- Supporting Image -->
-                            <div class="relative file-drop-zone rounded-2xl p-5 text-center group"
-                                 :class="files.supporting_image ? 'bg-purple-50/60 border-purple-300' : 'bg-slate-50/60'"
-                                 x-data="{ hover: false }"
-                                 @dragenter.prevent="hover = true"
-                                 @dragleave.prevent="hover = false"
-                                 @dragover.prevent
-                                 @drop.prevent="handleDrop($event, 'supporting_image')"
-                                 :class="hover && 'drag-over'">
+                                  <div x-show="!files.progress_report">
+                                      <button type="button" class="relative inline-flex items-center px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:text-amber-600 hover:border-amber-300 hover:bg-amber-50 transition-all shadow-sm">
+                                          Choose file
+                                          <input type="file" name="progress_report" id="id_progress_report"
+                                                 class="hidden-file-input"
+                                                 accept=".pdf,.doc,.docx"
+                                                 @change="handleFileChange($event, 'progress_report')">
+                                      </button>
+                                  </div>
+                                  <div x-show="files.progress_report">
+                                      <div class="flex items-center justify-center gap-2">
+                                          <span class="text-xs font-medium text-amber-700 truncate max-w-[120px]" x-text="files.progress_report.name"></span>
+                                          <button type="button" @click="clearFile('progress_report')" class="text-slate-400 hover:text-red-500 transition-colors">
+                                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                          </button>
+                                      </div>
+                                  </div>
+                             </div>
+                         </div>
 
-                                <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center mx-auto mb-3 transition-transform group-hover:scale-110">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                    </svg>
-                                </div>
-                                <h4 class="text-sm font-bold text-slate-800">Image</h4>
-                                <p class="text-xs text-slate-400 mt-0.5 mb-3">JPG, PNG</p>
+                         <!-- Presented Status Documents -->
+                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" x-show="projectStatus === 'PRESENTED'">
+                             <!-- Certificate of Appearance -->
+                             <div class="relative file-drop-zone rounded-2xl p-5 text-center group"
+                                  :class="(files.certificate_of_appearance ? 'bg-cyan-50/60 border-cyan-300' : 'bg-slate-50/60') + (isRequired('certificate_of_appearance') && !files.certificate_of_appearance ? ' ring-2 ring-red-300' : '')"
+                                  x-data="{ hover: false }"
+                                  @dragenter.prevent="hover = true"
+                                  @dragleave.prevent="hover = false"
+                                  @dragover.prevent
+                                  @drop.prevent="handleDrop($event, 'certificate_of_appearance')"
+                                  :class="hover && 'drag-over'">
 
-                                <template x-if="!files.supporting_image">
-                                    <button type="button" class="relative inline-flex items-center px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:text-purple-600 hover:border-purple-300 hover:bg-purple-50 transition-all shadow-sm">
-                                        Choose file
-                                        <input type="file" name="supporting_image" id="id_supporting_image"
-                                               class="hidden-file-input"
-                                               accept="image/jpeg,image/png"
-                                               @change="handleFileChange($event, 'supporting_image')">
-                                    </button>
-                                </template>
-                                <template x-if="files.supporting_image">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="text-xs font-medium text-purple-700 truncate max-w-[120px]" x-text="files.supporting_image.name"></span>
-                                        <button type="button" @click="clearFile('supporting_image')" class="text-slate-400 hover:text-red-500 transition-colors">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                        </button>
-                                    </div>
-                                </template>
+                                 <div class="w-12 h-12 bg-cyan-100 text-cyan-600 rounded-xl flex items-center justify-center mx-auto mb-3 transition-transform group-hover:scale-110">
+                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                     </svg>
+                                 </div>
+                                 <h4 class="text-sm font-bold text-slate-800">Certificate of Appearance <span x-show="isRequired('certificate_of_appearance')" class="text-red-500">*</span></h4>
+                                 <p class="text-xs text-slate-400 mt-0.5 mb-3">PDF, JPG, PNG</p>
 
-                                {% if form.supporting_image.errors %}
-                                <p class="text-red-500 text-xs mt-2">{{ form.supporting_image.errors.0 }}</p>
-                                {% endif %}
-                            </div>
-                        </div>
+                                  <div x-show="!files.certificate_of_appearance">
+                                      <button type="button" class="relative inline-flex items-center px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:text-cyan-600 hover:border-cyan-300 hover:bg-cyan-50 transition-all shadow-sm">
+                                          Choose file
+                                          <input type="file" name="certificate_of_appearance" id="id_certificate_of_appearance"
+                                                 class="hidden-file-input"
+                                                 accept=".pdf,.jpg,.jpeg,.png"
+                                                 @change="handleFileChange($event, 'certificate_of_appearance')">
+                                      </button>
+                                  </div>
+                                  <div x-show="files.certificate_of_appearance">
+                                      <div class="flex items-center justify-center gap-2">
+                                          <span class="text-xs font-medium text-cyan-700 truncate max-w-[120px]" x-text="files.certificate_of_appearance.name"></span>
+                                          <button type="button" @click="clearFile('certificate_of_appearance')" class="text-slate-400 hover:text-red-500 transition-colors">
+                                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                          </button>
+                                      </div>
+                                  </div>
+                             </div>
 
-                        <!-- Image Preview -->
-                        <div x-show="imagePreview" x-transition class="rounded-2xl border border-slate-200 overflow-hidden bg-slate-50">
-                            <div class="px-4 py-2 bg-white border-b border-slate-100 flex items-center justify-between">
-                                <span class="text-xs font-semibold text-slate-600">Image Preview</span>
-                                <button type="button" @click="clearFile('supporting_image')" class="text-xs text-red-500 hover:text-red-600 font-medium">Remove</button>
-                            </div>
-                            <div class="p-4 flex justify-center">
-                                <img :src="imagePreview" class="max-h-64 rounded-xl shadow-sm object-contain" alt="Preview">
-                            </div>
-                        </div>
+                             <!-- Certificate of Participation -->
+                             <div class="relative file-drop-zone rounded-2xl p-5 text-center group"
+                                  :class="(files.certificate_of_participation ? 'bg-indigo-50/60 border-indigo-300' : 'bg-slate-50/60') + (isRequired('certificate_of_participation') && !files.certificate_of_participation ? ' ring-2 ring-red-300' : '')"
+                                  x-data="{ hover: false }"
+                                  @dragenter.prevent="hover = true"
+                                  @dragleave.prevent="hover = false"
+                                  @dragover.prevent
+                                  @drop.prevent="handleDrop($event, 'certificate_of_participation')"
+                                  :class="hover && 'drag-over'">
 
-                        <!-- Info Banner -->
-                        <div class="flex items-start gap-3 p-4 rounded-xl bg-blue-50 border border-blue-100">
-                            <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-sm font-semibold text-slate-800">Optional but Recommended</p>
-                                <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">Attaching relevant documents helps reviewers evaluate your proposal faster. Maximum file size: 10MB per file.</p>
-                            </div>
-                        </div>
+                                 <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-3 transition-transform group-hover:scale-110">
+                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7 10l5 5 5-5"></path>
+                                     </svg>
+                                 </div>
+                                 <h4 class="text-sm font-bold text-slate-800">Certificate of Participation <span x-show="isRequired('certificate_of_participation')" class="text-red-500">*</span></h4>
+                                 <p class="text-xs text-slate-400 mt-0.5 mb-3">PDF, JPG, PNG</p>
 
-                        <div class="flex justify-between pt-4">
-                            <button type="button" @click="currentStep = 2"
-                                    class="inline-flex items-center px-5 py-2.5 border border-slate-200 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-slate-200">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"></path>
-                                </svg>
-                                Back
-                            </button>
-                            <button type="submit"
-                                    class="inline-flex items-center px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-emerald-500/30">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                {% if proposal %}Save Changes{% else %}Submit Proposal{% endif %}
-                            </button>
-                        </div>
-                    </div>
+                                  <div x-show="!files.certificate_of_participation">
+                                      <button type="button" class="relative inline-flex items-center px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50 transition-all shadow-sm">
+                                          Choose file
+                                          <input type="file" name="certificate_of_participation" id="id_certificate_of_participation"
+                                                 class="hidden-file-input"
+                                                 accept=".pdf,.jpg,.jpeg,.png"
+                                                 @change="handleFileChange($event, 'certificate_of_participation')">
+                                      </button>
+                                  </div>
+                                  <div x-show="files.certificate_of_participation">
+                                      <div class="flex items-center justify-center gap-2">
+                                          <span class="text-xs font-medium text-indigo-700 truncate max-w-[120px]" x-text="files.certificate_of_participation.name"></span>
+                                          <button type="button" @click="clearFile('certificate_of_participation')" class="text-slate-400 hover:text-red-500 transition-colors">
+                                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                          </button>
+                                      </div>
+                                  </div>
+                              </div>
+
+                              <!-- Abstract Document -->
+                              <div class="relative file-drop-zone rounded-2xl p-5 text-center group"
+                                   :class="(files.abstract_document ? 'bg-cyan-50/60 border-cyan-300' : 'bg-slate-50/60') + (isRequired('abstract_document') && !files.abstract_document ? ' ring-2 ring-red-300' : '')"
+                                   x-data="{ hover: false }"
+                                   @dragenter.prevent="hover = true"
+                                   @dragleave.prevent="hover = false"
+                                   @dragover.prevent
+                                   @drop.prevent="handleDrop($event, 'abstract_document')"
+                                   :class="hover && 'drag-over'">
+
+                                 <div class="w-12 h-12 bg-cyan-100 text-cyan-600 rounded-xl flex items-center justify-center mx-auto mb-3 transition-transform group-hover:scale-110">
+                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                     </svg>
+                                 </div>
+                                 <h4 class="text-sm font-bold text-slate-800">Abstract Document <span x-show="isRequired('abstract_document')" class="text-red-500">*</span></h4>
+                                 <p class="text-xs text-slate-400 mt-0.5 mb-3">PDF, DOCX</p>
+
+                                  <div x-show="!files.abstract_document">
+                                      <button type="button" class="relative inline-flex items-center px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:text-cyan-600 hover:border-cyan-300 hover:bg-cyan-50 transition-all shadow-sm">
+                                          Choose file
+                                          <input type="file" name="abstract_document" id="id_abstract_document"
+                                                 class="hidden-file-input"
+                                                 accept=".pdf,.doc,.docx"
+                                                 @change="handleFileChange($event, 'abstract_document')">
+                                      </button>
+                                  </div>
+                                  <div x-show="files.abstract_document">
+                                      <div class="flex items-center justify-center gap-2">
+                                          <span class="text-xs font-medium text-cyan-700 truncate max-w-[120px]" x-text="files.abstract_document.name"></span>
+                                          <button type="button" @click="clearFile('abstract_document')" class="text-slate-400 hover:text-red-500 transition-colors">
+                                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                          </button>
+                                      </div>
+                                  </div>
+                             </div>
+
+                             <!-- Conference Proceedings -->
+                             <div class="relative file-drop-zone rounded-2xl p-5 text-center group"
+                                  :class="(files.conference_proceedings ? 'bg-pink-50/60 border-pink-300' : 'bg-slate-50/60') + (isRequired('conference_proceedings') && !files.conference_proceedings ? ' ring-2 ring-red-300' : '')"
+                                  x-data="{ hover: false }"
+                                  @dragenter.prevent="hover = true"
+                                  @dragleave.prevent="hover = false"
+                                  @dragover.prevent
+                                  @drop.prevent="handleDrop($event, 'conference_proceedings')"
+                                  :class="hover && 'drag-over'">
+
+                                 <div class="w-12 h-12 bg-pink-100 text-pink-600 rounded-xl flex items-center justify-center mx-auto mb-3 transition-transform group-hover:scale-110">
+                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h10M4 18h6"></path>
+                                     </svg>
+                                 </div>
+                                 <h4 class="text-sm font-bold text-slate-800">Conference Proceedings <span x-show="isRequired('conference_proceedings')" class="text-red-500">*</span></h4>
+                                 <p class="text-xs text-slate-400 mt-0.5 mb-3">PDF</p>
+
+                                  <div x-show="!files.conference_proceedings">
+                                      <button type="button" class="relative inline-flex items-center px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:text-pink-600 hover:border-pink-300 hover:bg-pink-50 transition-all shadow-sm">
+                                          Choose file
+                                          <input type="file" name="conference_proceedings" id="id_conference_proceedings"
+                                                 class="hidden-file-input"
+                                                 accept=".pdf"
+                                                 @change="handleFileChange($event, 'conference_proceedings')">
+                                      </button>
+                                  </div>
+                                  <div x-show="files.conference_proceedings">
+                                      <div class="flex items-center justify-center gap-2">
+                                          <span class="text-xs font-medium text-pink-700 truncate max-w-[120px]" x-text="files.conference_proceedings.name"></span>
+                                          <button type="button" @click="clearFile('conference_proceedings')" class="text-slate-400 hover:text-red-500 transition-colors">
+                                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                          </button>
+                                      </div>
+                                  </div>
+                             </div>
+                         </div>
+
+                         <!-- Published Status Documents -->
+                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" x-show="projectStatus === 'PUBLISHED'">
+                             <!-- Full Paper -->
+                             <div class="relative file-drop-zone rounded-2xl p-5 text-center group"
+                                  :class="(files.full_paper ? 'bg-rose-50/60 border-rose-300' : 'bg-slate-50/60') + (isRequired('full_paper') && !files.full_paper ? ' ring-2 ring-red-300' : '')"
+                                  x-data="{ hover: false }"
+                                  @dragenter.prevent="hover = true"
+                                  @dragleave.prevent="hover = false"
+                                  @dragover.prevent
+                                  @drop.prevent="handleDrop($event, 'full_paper')"
+                                  :class="hover && 'drag-over'">
+
+                                 <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center mx-auto mb-3 transition-transform group-hover:scale-110">
+                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                     </svg>
+                                 </div>
+                                 <h4 class="text-sm font-bold text-slate-800">Full Paper <span x-show="isRequired('full_paper')" class="text-red-500">*</span></h4>
+                                 <p class="text-xs text-slate-400 mt-0.5 mb-3">PDF</p>
+
+                                  <div x-show="!files.full_paper">
+                                      <button type="button" class="relative inline-flex items-center px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:text-rose-600 hover:border-rose-300 hover:bg-rose-50 transition-all shadow-sm">
+                                          Choose file
+                                          <input type="file" name="full_paper" id="id_full_paper"
+                                                 class="hidden-file-input"
+                                                 accept=".pdf"
+                                                 @change="handleFileChange($event, 'full_paper')">
+                                      </button>
+                                  </div>
+                                  <div x-show="files.full_paper">
+                                      <div class="flex items-center justify-center gap-2">
+                                          <span class="text-xs font-medium text-rose-700 truncate max-w-[120px]" x-text="files.full_paper.name"></span>
+                                          <button type="button" @click="clearFile('full_paper')" class="text-slate-400 hover:text-red-500 transition-colors">
+                                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                          </button>
+                                      </div>
+                                  </div>
+                             </div>
+
+                             <!-- Certificate of Publication -->
+                             <div class="relative file-drop-zone rounded-2xl p-5 text-center group"
+                                  :class="(files.certificate_of_publication ? 'bg-teal-50/60 border-teal-300' : 'bg-slate-50/60') + (isRequired('certificate_of_publication') && !files.certificate_of_publication ? ' ring-2 ring-red-300' : '')"
+                                  x-data="{ hover: false }"
+                                  @dragenter.prevent="hover = true"
+                                  @dragleave.prevent="hover = false"
+                                  @dragover.prevent
+                                  @drop.prevent="handleDrop($event, 'certificate_of_publication')"
+                                  :class="hover && 'drag-over'">
+
+                                 <div class="w-12 h-12 bg-teal-100 text-teal-600 rounded-xl flex items-center justify-center mx-auto mb-3 transition-transform group-hover:scale-110">
+                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7 10l5 5 5-5"></path>
+                                     </svg>
+                                 </div>
+                                 <h4 class="text-sm font-bold text-slate-800">Certificate of Publication <span x-show="isRequired('certificate_of_publication')" class="text-red-500">*</span></h4>
+                                 <p class="text-xs text-slate-400 mt-0.5 mb-3">PDF, JPG, PNG</p>
+
+                                  <div x-show="!files.certificate_of_publication">
+                                      <button type="button" class="relative inline-flex items-center px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:text-teal-600 hover:border-teal-300 hover:bg-teal-50 transition-all shadow-sm">
+                                          Choose file
+                                          <input type="file" name="certificate_of_publication" id="id_certificate_of_publication"
+                                                 class="hidden-file-input"
+                                                 accept=".pdf,.jpg,.jpeg,.png"
+                                                 @change="handleFileChange($event, 'certificate_of_publication')">
+                                      </button>
+                                  </div>
+                                  <div x-show="files.certificate_of_publication">
+                                      <div class="flex items-center justify-center gap-2">
+                                          <span class="text-xs font-medium text-teal-700 truncate max-w-[120px]" x-text="files.certificate_of_publication.name"></span>
+                                          <button type="button" @click="clearFile('certificate_of_publication')" class="text-slate-400 hover:text-red-500 transition-colors">
+                                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                          </button>
+                                      </div>
+                                  </div>
+                             </div>
+                         </div>
+
+                         <!-- Validation Error -->
+                         <div x-show="validationErrors.length > 0" class="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-100">
+                             <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                 </svg>
+                             </div>
+                             <div>
+                                 <p class="text-sm font-semibold text-red-800">Missing Required Documents</p>
+                                 <p class="text-xs text-red-600 mt-0.5">Please upload all required documents for <span x-text="statusInfo?.label"></span> status before submitting.</p>
+                             </div>
+                         </div>
+
+                         <div class="flex justify-between pt-4">
+                             <button type="button" @click="currentStep = 2"
+                                     class="inline-flex items-center px-5 py-2.5 border border-slate-200 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-slate-200">
+                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"></path>
+                                 </svg>
+                                 Back
+                             </button>
+                             <button type="submit"
+                                     class="inline-flex items-center px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-emerald-500/30">
+                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                 </svg>
+                                 {% if proposal %}Save Changes{% else %}Submit Proposal{% endif %}
+</button>
+                          </div>
+                      </div>
                 </form>
             </div>
-
-            <!-- Footer Note -->
-            <p class="text-center text-xs text-slate-400">
-                All fields marked with <span class="text-red-500">*</span> are required
-            </p>
         </div>
 
-        <!-- Live Preview Sidebar -->
-        <div class="hidden lg:block lg:col-span-1">
-            <div class="sticky top-24 space-y-5">
-                <!-- Proposal Card Preview -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
-                    <div class="p-6">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600"
-                                  x-text="proposalTypeLabel || 'Draft'"
-                                  x-show="proposalTypeLabel"></span>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-600">Pending</span>
-                        </div>
-
-                        <h3 class="text-base font-bold text-slate-900 leading-snug mb-3">
-                            <span x-text="title || 'Untitled Proposal'" :class="!title && 'text-slate-400 italic'"></span>
-                        </h3>
-
-                        <div class="relative">
-                            <p class="text-sm text-slate-500 leading-relaxed line-clamp-4">
-                                <span x-text="abstractText || 'Your abstract will appear here as you type...'" :class="!abstractText && 'italic'"></span>
-                            </p>
-                            <div x-show="abstractText.length > 200" class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent"></div>
-                        </div>
-
-                        <div class="mt-5 pt-5 border-t border-slate-100">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs">
-                                    {{ user.get_full_name|default:user.username|make_list|first|upper }}
-                                </div>
-                                <div class="min-w-0">
-                                    <p class="text-xs font-semibold text-slate-700 truncate">{{ user.get_full_name|default:user.username }}</p>
-                                    <p class="text-[10px] text-slate-400">{{ user.get_role_display|default:'User' }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <!-- Right Column: Status & Progress Sidebar -->
+        <div class="lg:col-span-1">
+            <div class="sticky top-24 space-y-4">
+                
+                <!-- Project Status Selection Card -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <h4 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        Project Status
+                    </h4>
+                    {{ form.project_status }}
+                    {% if form.project_status.errors %}
+                    <p class="text-red-500 text-xs mt-1">{{ form.project_status.errors.0 }}</p>
+                    {% endif %}
+                    <p class="text-xs text-slate-400 mt-2">Select status to see required documents</p>
                 </div>
 
-                <!-- Progress Mini -->
+                <!-- Status Info Banner -->
+                <div x-show="statusInfo" class="bg-white rounded-2xl border p-4"
+                     :class="{
+                       'border-blue-100': projectStatus === 'ONGOING',
+                       'border-emerald-100': projectStatus === 'COMPLETED',
+                       'border-purple-100': projectStatus === 'PRESENTED',
+                       'border-amber-100': projectStatus === 'PUBLISHED'
+                     }">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                             :class="{
+                               'bg-blue-100 text-blue-600': projectStatus === 'ONGOING',
+                               'bg-emerald-100 text-emerald-600': projectStatus === 'COMPLETED',
+                               'bg-purple-100 text-purple-600': projectStatus === 'PRESENTED',
+                               'bg-amber-100 text-amber-600': projectStatus === 'PUBLISHED'
+                             }">
+                            <svg x-show="projectStatus === 'ONGOING'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <svg x-show="projectStatus === 'COMPLETED'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <svg x-show="projectStatus === 'PRESENTED'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                            </svg>
+                            <svg x-show="projectStatus === 'PUBLISHED'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold" :class="{
+                              'text-blue-800': projectStatus === 'ONGOING',
+                              'text-emerald-800': projectStatus === 'COMPLETED',
+                              'text-purple-800': projectStatus === 'PRESENTED',
+                              'text-amber-800': projectStatus === 'PUBLISHED'
+                            }">
+                                <span x-text="statusInfo?.label"></span>
+                            </p>
+                        </div>
+                    </div>
+                    <p class="text-xs" :class="{
+                      'text-blue-600': projectStatus === 'ONGOING',
+                      'text-emerald-600': projectStatus === 'COMPLETED',
+                      'text-purple-600': projectStatus === 'PRESENTED',
+                      'text-amber-600': projectStatus === 'PUBLISHED'
+                    }" x-text="statusInfo?.desc"></p>
+                </div>
+
+                <!-- Progress Completion Card -->
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
                     <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">Completion</h4>
                     <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -572,12 +832,21 @@
                             Type selected
                         </div>
                         <div class="flex items-center gap-2 text-xs"
-                             :class="abstractText.length >= 50 ? 'text-emerald-600 font-medium' : 'text-slate-400'">
+                             :class="projectStatus ? 'text-emerald-600 font-medium' : 'text-slate-400'">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path x-show="abstractText.length >= 50" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
-                                <circle x-show="abstractText.length < 50" cx="12" cy="12" r="10" stroke-width="2"></circle>
+                                <path x-show="projectStatus" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                                <circle x-show="!projectStatus" cx="12" cy="12" r="10" stroke-width="2"></circle>
                             </svg>
-                            Abstract (<span x-text="abstractText.length"></span>/50)
+                            Status selected
+                        </div>
+                        <div class="flex items-center gap-2 text-xs"
+                             x-show="hasAbstractField"
+                             :class="(projectStatus === 'ONGOING' || abstractText.length >= 50) ? 'text-emerald-600 font-medium' : 'text-slate-400'">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path x-show="projectStatus === 'ONGOING' || abstractText.length >= 50" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                                <circle x-show="projectStatus !== 'ONGOING' && abstractText.length < 50" cx="12" cy="12" r="10" stroke-width="2"></circle>
+                            </svg>
+                            Abstract <span x-show="projectStatus !== 'ONGOING'" x-text="`(${abstractText.length}/50)`"></span>
                         </div>
                         <div class="flex items-center gap-2 text-xs"
                              :class="fullDescription.length >= 20 ? 'text-emerald-600 font-medium' : 'text-slate-400'">
@@ -585,16 +854,68 @@
                                 <path x-show="fullDescription.length >= 20" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
                                 <circle x-show="fullDescription.length < 20" cx="12" cy="12" r="10" stroke-width="2"></circle>
                             </svg>
-                            Description provided
+                            Description
                         </div>
                     </div>
                 </div>
+
+                <!-- Proposal Preview Card -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+                    <div class="p-5">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600"
+                                  x-text="proposalTypeLabel || 'Draft'"
+                                  x-show="proposalTypeLabel"></span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-600">Pending</span>
+                        </div>
+
+                        <h3 class="text-sm font-bold text-slate-900 leading-snug mb-2">
+                            <span x-text="title || 'Untitled Proposal'" :class="!title && 'text-slate-400 italic'"></span>
+                        </h3>
+
+                        <div class="relative" x-show="hasAbstractField">
+                            <p class="text-xs text-slate-500 leading-relaxed line-clamp-3">
+                                <span x-text="abstractText || 'Your abstract will appear here...'" :class="!abstractText && 'italic'"></span>
+                            </p>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-slate-100">
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-[10px]">
+                                    {{ user.get_full_name|default:user.username|make_list|first|upper }}
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 truncate">{{ user.get_full_name|default:user.username }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-center text-xs text-slate-400">
+                    All fields marked with <span class="text-red-500">*</span> are required
+                </p>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+const REQUIRED_DOCS = {
+    'ONGOING': ['proposal_document', 'budget_pdf'],
+    'COMPLETED': ['progress_report'],
+    'PRESENTED': ['certificate_of_appearance', 'certificate_of_participation', 'abstract_document', 'conference_proceedings'],
+    'PUBLISHED': ['full_paper', 'certificate_of_publication']
+};
+
+const STATUS_INFO = {
+    'ONGOING': { label: 'Ongoing', icon: 'clock', color: 'blue', desc: 'Proposal document and budget file required' },
+    'COMPLETED': { label: 'Completed', icon: 'check', color: 'emerald', desc: 'Progress Report/Terminal Report required (approved by R&E office after submission)' },
+    'PRESENTED': { label: 'Presented', icon: 'presentation', color: 'purple', desc: 'Certificate of Appearance, Certificate of Participation, Abstract Document, and Conference Proceedings required' },
+    'PUBLISHED': { label: 'Published', icon: 'book', color: 'amber', desc: 'Full Paper and Certificate of Publication required' }
+};
+
 function proposalWizard() {
     return {
         currentStep: 1,
@@ -608,30 +929,52 @@ function proposalWizard() {
         fullDescription: '',
         proposalType: '',
         proposalTypeLabel: '',
+        projectStatus: '',
+        hasAbstractField: false,
         shakeTitle: false,
         shakeAbstract: false,
+        shakeStatus: false,
         files: {
             proposal_document: null,
             budget_pdf: null,
-            supporting_image: null
+            supporting_image: null,
+            progress_report: null,
+            abstract_document: null,
+            certificate_of_appearance: null,
+            certificate_of_participation: null,
+            conference_proceedings: null,
+            full_paper: null,
+            certificate_of_publication: null
         },
         imagePreview: null,
+        validationErrors: [],
+        submitErrorMessage: '',
 
         get completion() {
             let score = 0;
-            if (this.title.length >= 10) score += 25;
-            if (this.proposalType) score += 25;
-            if (this.abstractText.length >= 50) score += 25;
-            if (this.fullDescription.length >= 20) score += 25;
+            if (this.title.length >= 10) score += 20;
+            if (this.proposalType) score += 20;
+            if (this.projectStatus) score += 20;
+            if (this.projectStatus === 'ONGOING') {
+                if (this.fullDescription.length >= 20) score += 20;
+            } else {
+                if (this.hasAbstractField) {
+                    if (this.abstractText.length >= 50) score += 20;
+                } else {
+                    score += 20;
+                }
+            }
             return score;
         },
 
-        initWizard() {
-            // Sync with existing form values (e.g. when editing)
+initWizard() {
             const titleEl = document.getElementById('id_title');
             const abstractEl = document.getElementById('id_abstract');
             const descEl = document.getElementById('id_full_description');
             const typeEl = document.getElementById('id_proposal_type');
+            const statusEl = document.getElementById('id_project_status');
+
+            this.hasAbstractField = !!abstractEl;
 
             if (titleEl) {
                 this.title = titleEl.value;
@@ -650,20 +993,61 @@ function proposalWizard() {
                 this.proposalTypeLabel = typeEl.options[typeEl.selectedIndex]?.text || '';
                 typeEl.addEventListener('change', (e) => {
                     this.proposalType = e.target.value;
-                    this.proposalTypeLabel = e.target.options[e.target.selectedIndex]?.text || '';
+                    this.proposalTypeLabel = typeEl.options[typeEl.selectedIndex]?.text || '';
+                });
+            }
+            if (statusEl) {
+                this.projectStatus = statusEl.value;
+                statusEl.addEventListener('change', (e) => {
+                    this.projectStatus = e.target.value;
+                    this.validateDocuments();
                 });
             }
 
-            // If there are server-side errors, jump to the relevant step
             setTimeout(() => {
                 const hasStep1Errors = document.querySelector('[id^="id_title"].border-red-500') ||
                                        document.querySelector('[id^="id_proposal_type"].border-red-500') ||
+                                       document.querySelector('[id^="id_project_status"].border-red-500') ||
                                        document.querySelector('[id^="id_faculty_author"].border-red-500');
                 const hasStep2Errors = document.querySelector('[id^="id_abstract"].border-red-500') ||
-                                       document.querySelector('[id^="id_full_description"].border-red-500');
+                                       (this.projectStatus === 'ONGOING' && document.querySelector('[id^="id_full_description"].border-red-500'));
                 if (hasStep2Errors) this.currentStep = 2;
                 if (hasStep1Errors) this.currentStep = 1;
             }, 0);
+        },
+
+        get requiredDocs() {
+            if (!this.projectStatus) return [];
+            return REQUIRED_DOCS[this.projectStatus] || [];
+        },
+
+        get statusInfo() {
+            if (!this.projectStatus) return null;
+            return STATUS_INFO[this.projectStatus] || null;
+        },
+
+        isRequired(field) {
+            return this.requiredDocs.includes(field);
+        },
+
+        validateDocuments() {
+            this.validationErrors = [];
+            if (!this.projectStatus) return;
+
+            const missing = [];
+            for (const doc of this.requiredDocs) {
+                const input = document.getElementById('id_' + doc);
+                const inputHasFile = input && input.files && input.files.length > 0;
+                if (!this.files[doc] && !inputHasFile) {
+                    missing.push(doc);
+                }
+            }
+            this.validationErrors = missing;
+        },
+
+        get canSubmit() {
+            this.validateDocuments();
+            return this.validationErrors.length === 0;
         },
 
         stepCircleClass(stepId) {
@@ -677,38 +1061,66 @@ function proposalWizard() {
         },
 
         validateStep1() {
-            if (this.title.length >= 10 && this.proposalType) {
+            this.submitErrorMessage = '';
+            if (this.title.length >= 10 && this.proposalType && this.projectStatus) {
                 this.currentStep = 2;
             } else {
                 if (this.title.length < 10) {
                     this.shakeTitle = true;
                     document.getElementById('id_title')?.focus();
-                } else {
+                } else if (!this.proposalType) {
                     document.getElementById('id_proposal_type')?.focus();
+                } else {
+                    this.shakeStatus = true;
+                    document.getElementById('id_project_status')?.focus();
                 }
             }
         },
 
         validateStep2() {
-            if (this.abstractText.length >= 50 && this.fullDescription.length >= 20) {
-                this.currentStep = 3;
-            } else {
-                if (this.abstractText.length < 50) {
-                    this.shakeAbstract = true;
-                    document.getElementById('id_abstract')?.focus();
+            this.submitErrorMessage = '';
+            if (this.projectStatus === 'ONGOING') {
+                const descValid = this.fullDescription.length >= 20;
+                if (descValid) {
+                    this.currentStep = 3;
                 } else {
                     document.getElementById('id_full_description')?.focus();
+                }
+            } else {
+                const abstractValid = !this.hasAbstractField || this.abstractText.length >= 50;
+                if (abstractValid) {
+                    this.currentStep = 3;
+                } else {
+                    this.shakeAbstract = true;
+                    document.getElementById('id_abstract')?.focus();
                 }
             }
         },
 
-        validateBeforeSubmit() {
-            if (this.title.length < 10 || this.abstractText.length < 50 || !this.proposalType) {
-                if (this.title.length < 10 || !this.proposalType) this.currentStep = 1;
-                else this.currentStep = 2;
-                return false;
-            }
+        handleSubmit(event) {
+            this.submitErrorMessage = '';
+            this.syncFileInputs(event.target);
             return true;
+        },
+
+        syncFileInputs(form) {
+            for (const [field, file] of Object.entries(this.files)) {
+                if (!file) continue;
+
+                let input = form.querySelector(`input[type="file"][name="${field}"]`);
+                if (!input) {
+                    input = document.createElement('input');
+                    input.type = 'file';
+                    input.name = field;
+                    input.id = 'id_' + field;
+                    input.style.display = 'none';
+                    form.appendChild(input);
+                }
+
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                input.files = dt.files;
+            }
         },
 
         handleFileChange(event, field) {

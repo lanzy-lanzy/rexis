@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Comprehensive Reports | Research &amp; Extension (MIS){% endblock %}
+{% block title %}Comprehensive Reports | Research & Extension (MIS){% endblock %}
 {% block page_title %}Reports{% endblock %}
 {% block page_title_mobile %}Reports{% endblock %}
 
@@ -36,34 +36,34 @@
 
 {% block content %}
 <section class="space-y-6 print-surface">
-    <div class="overflow-hidden rounded-lg border border-slate-800 bg-slate-950 shadow-soft print-break-inside-avoid">
-        <div class="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
+    <div class="overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 shadow-xl border border-slate-700/50 print-break-inside-avoid">
+        <div class="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-widest text-blue-200">Comprehensive reports</p>
-                <h1 class="mt-1 text-2xl font-bold tracking-tight text-white">{{ scope_label }} Report</h1>
+                <h1 class="mt-1 text-2xl md:text-3xl font-bold tracking-tight text-white">{{ scope_label }} Report</h1>
                 <p class="mt-1 max-w-3xl text-sm text-slate-300">{{ scope_description }}</p>
                 <p class="mt-3 text-xs font-medium text-slate-400">Generated {{ generated_at|date:"M d, Y h:i A" }}</p>
             </div>
             <div class="no-print flex flex-wrap gap-2">
-                <button type="button" onclick="window.print()" class="inline-flex items-center rounded-md border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-blue-300/40">
+                <button type="button" onclick="window.print()" class="inline-flex items-center rounded-xl border border-white/15 bg-white/10 backdrop-blur-sm px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-blue-300/40">
                     Print
                 </button>
-                <a href="{% url 'comprehensive_reports_pdf' %}{% if filter_querystring %}?{{ filter_querystring }}{% endif %}" class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300/40">
+                <a href="{% url 'comprehensive_reports_pdf' %}{% if filter_querystring %}?{{ filter_querystring }}{% endif %}" class="inline-flex items-center rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300/40">
                     Export PDF
                 </a>
             </div>
         </div>
     </div>
 
-    <form method="get" class="no-print rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <form method="get" class="no-print rounded-2xl border border-slate-200/60 bg-white p-5 shadow-lg">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
             <div class="xl:col-span-2">
                 <label for="report-q" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Search</label>
-                <input id="report-q" type="search" name="q" value="{{ filters.q }}" placeholder="Title, author, location, narrative" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                <input id="report-q" type="search" name="q" value="{{ filters.q }}" placeholder="Title, author, location, narrative" class="mt-1 block w-full rounded-xl border border-slate-200/60 px-4 py-2.5 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div>
                 <label for="report-type" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Record Type</label>
-                <select id="report-type" name="record_type" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                <select id="report-type" name="record_type" class="mt-1 block w-full rounded-xl border border-slate-200/60 px-4 py-2.5 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                     {% for value, label in record_type_choices %}
                     <option value="{{ value }}" {% if filters.record_type == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
@@ -71,7 +71,7 @@
             </div>
             <div>
                 <label for="report-status" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Status</label>
-                <select id="report-status" name="status" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                <select id="report-status" name="status" class="mt-1 block w-full rounded-xl border border-slate-200/60 px-4 py-2.5 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                     <option value="">All statuses</option>
                     {% for value, label in status_choices %}
                     <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
@@ -80,15 +80,15 @@
             </div>
             <div>
                 <label for="report-start-date" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Start Date</label>
-                <input id="report-start-date" type="date" name="start_date" value="{{ filters.start_date }}" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                <input id="report-start-date" type="date" name="start_date" value="{{ filters.start_date }}" class="mt-1 block w-full rounded-xl border border-slate-200/60 px-4 py-2.5 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div>
                 <label for="report-end-date" class="block text-xs font-bold uppercase tracking-wider text-slate-500">End Date</label>
-                <input id="report-end-date" type="date" name="end_date" value="{{ filters.end_date }}" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                <input id="report-end-date" type="date" name="end_date" value="{{ filters.end_date }}" class="mt-1 block w-full rounded-xl border border-slate-200/60 px-4 py-2.5 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
             <div>
                 <label for="report-approval-status" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Approval</label>
-                <select id="report-approval-status" name="approval_status" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                <select id="report-approval-status" name="approval_status" class="mt-1 block w-full rounded-xl border border-slate-200/60 px-4 py-2.5 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                     <option value="">All approvals</option>
                     {% for value, label in approval_status_choices %}
                     <option value="{{ value }}" {% if filters.approval_status == value %}selected{% endif %}>{{ label }}</option>
@@ -97,7 +97,7 @@
             </div>
             <div>
                 <label for="report-project-progress" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Project Progress</label>
-                <select id="report-project-progress" name="project_progress" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                <select id="report-project-progress" name="project_progress" class="mt-1 block w-full rounded-xl border border-slate-200/60 px-4 py-2.5 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                     <option value="">All progress</option>
                     {% for value, label in project_progress_choices %}
                     <option value="{{ value }}" {% if filters.project_progress == value %}selected{% endif %}>{{ label }}</option>
@@ -106,7 +106,7 @@
             </div>
             <div>
                 <label for="report-department" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Department</label>
-                <select id="report-department" name="department" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                <select id="report-department" name="department" class="mt-1 block w-full rounded-xl border border-slate-200/60 px-4 py-2.5 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                     <option value="">All departments</option>
                     {% for value, label in department_choices %}
                     <option value="{{ value }}" {% if filters.department == value %}selected{% endif %}>{{ label }}</option>
@@ -115,7 +115,7 @@
             </div>
             <div>
                 <label for="report-submitter-type" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Submitter</label>
-                <select id="report-submitter-type" name="submitter_type" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                <select id="report-submitter-type" name="submitter_type" class="mt-1 block w-full rounded-xl border border-slate-200/60 px-4 py-2.5 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                     <option value="">All submitters</option>
                     {% for value, label in submitter_type_choices %}
                     <option value="{{ value }}" {% if filters.submitter_type == value %}selected{% endif %}>{{ label }}</option>
@@ -124,40 +124,68 @@
             </div>
         </div>
         <div class="mt-4 flex flex-wrap gap-2">
-            <button type="submit" class="inline-flex items-center rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30">
+            <button type="submit" class="inline-flex items-center rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:from-slate-800 hover:to-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30">
                 Apply Filters
             </button>
-            <a href="{% url 'comprehensive_reports' %}" class="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+            <a href="{% url 'comprehensive_reports' %}" class="inline-flex items-center rounded-xl border border-slate-200/60 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-lg transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                 Clear
             </a>
         </div>
     </form>
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div class="rounded-lg border border-slate-200 border-l-4 border-l-blue-600 bg-white p-5 shadow-sm print-break-inside-avoid">
-            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Proposals</p>
-            <p class="mt-2 text-3xl font-bold tracking-tight text-slate-950">{{ total_proposals }}</p>
+        <div class="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-lg hover:shadow-xl transition-shadow print-break-inside-avoid">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Proposals</p>
+                    <p class="mt-2 text-3xl font-bold tracking-tight text-slate-950">{{ total_proposals }}</p>
+                </div>
+                <div class="rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 p-2.5 text-blue-700 border border-blue-200/60 shadow-sm">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+            </div>
             <p class="mt-3 text-sm font-medium text-slate-600">Scoped submissions</p>
         </div>
-        <div class="rounded-lg border border-slate-200 border-l-4 border-l-emerald-600 bg-white p-5 shadow-sm print-break-inside-avoid">
-            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Research Records</p>
-            <p class="mt-2 text-3xl font-bold tracking-tight text-slate-950">{{ total_research }}</p>
+        <div class="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-lg hover:shadow-xl transition-shadow print-break-inside-avoid">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Research Records</p>
+                    <p class="mt-2 text-3xl font-bold tracking-tight text-slate-950">{{ total_research }}</p>
+                </div>
+                <div class="rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 p-2.5 text-emerald-700 border border-emerald-200/60 shadow-sm">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                </div>
+            </div>
             <p class="mt-3 text-sm font-medium text-slate-600">PHP {{ total_funding_display }} funding</p>
         </div>
-        <div class="rounded-lg border border-slate-200 border-l-4 border-l-violet-600 bg-white p-5 shadow-sm print-break-inside-avoid">
-            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Extension Activities</p>
-            <p class="mt-2 text-3xl font-bold tracking-tight text-slate-950">{{ total_extension }}</p>
+        <div class="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-lg hover:shadow-xl transition-shadow print-break-inside-avoid">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Extension Activities</p>
+                    <p class="mt-2 text-3xl font-bold tracking-tight text-slate-950">{{ total_extension }}</p>
+                </div>
+                <div class="rounded-xl bg-gradient-to-br from-violet-50 to-violet-100 p-2.5 text-violet-700 border border-violet-200/60 shadow-sm">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                </div>
+            </div>
             <p class="mt-3 text-sm font-medium text-slate-600">{{ total_beneficiaries }} beneficiaries</p>
         </div>
-        <div class="rounded-lg border border-slate-200 border-l-4 border-l-slate-700 bg-white p-5 shadow-sm print-break-inside-avoid">
-            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Narrative Reports</p>
-            <p class="mt-2 text-3xl font-bold tracking-tight text-slate-950">{{ total_reports }}</p>
+        <div class="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-lg hover:shadow-xl transition-shadow print-break-inside-avoid">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Narrative Reports</p>
+                    <p class="mt-2 text-3xl font-bold tracking-tight text-slate-950">{{ total_reports }}</p>
+                </div>
+                <div class="rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 p-2.5 text-slate-700 border border-slate-200/60 shadow-sm">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 118 0v2m-6-9h4m-9 13h14a2 2 0 002-2v-5a2 2 0 00-2-2H4a2 2 0 00-2 2v5a2 2 0 002 2z"></path></svg>
+                </div>
+            </div>
             <p class="mt-3 text-sm font-medium text-slate-600">Quarterly submissions</p>
         </div>
     </div>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm print-break-inside-avoid">
+        <div class="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-lg print-break-inside-avoid">
             <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500">Proposal Status</h2>
             <div class="mt-4 space-y-3">
                 {% for row in proposal_status_rows %}
@@ -168,7 +196,7 @@
                 {% endfor %}
             </div>
         </div>
-        <div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm print-break-inside-avoid">
+        <div class="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-lg print-break-inside-avoid">
             <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500">Research Status</h2>
             <div class="mt-4 space-y-3">
                 {% for row in research_status_rows %}
@@ -179,7 +207,7 @@
                 {% endfor %}
             </div>
         </div>
-        <div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm print-break-inside-avoid">
+        <div class="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-lg print-break-inside-avoid">
             <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500">Extension Status</h2>
             <div class="mt-4 space-y-3">
                 {% for row in extension_status_rows %}
@@ -192,152 +220,212 @@
         </div>
     </div>
 
-    <div class="rounded-lg border border-slate-200 bg-white shadow-sm print-break-inside-avoid">
-        <div class="border-b border-slate-200 px-5 py-4">
+    <div class="rounded-2xl border border-slate-200/60 bg-white shadow-lg print-break-inside-avoid">
+        <div class="border-b border-slate-200/60 px-6 py-4">
             <h2 class="text-base font-bold text-slate-950">Proposals</h2>
             <p class="text-sm text-slate-500">Submission type, status, author, and date submitted</p>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-200 text-sm">
-                <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+            <table class="min-w-full divide-y divide-slate-100/80 text-sm">
+                <thead class="bg-gradient-to-r from-slate-50 to-slate-100/80 text-left text-xs font-bold uppercase tracking-wider text-slate-600">
                     <tr>
-                        <th class="px-5 py-3">Title</th>
-                        <th class="px-5 py-3">Type</th>
-                        <th class="px-5 py-3">Status</th>
-                        <th class="px-5 py-3">Faculty</th>
-                        <th class="px-5 py-3">Submitted</th>
+                        <th class="px-6 py-4">Title</th>
+                        <th class="px-6 py-4">Type</th>
+                        <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4">Faculty</th>
+                        <th class="px-6 py-4">Submitted</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 bg-white">
+                <tbody class="divide-y divide-slate-100/80 bg-white">
                     {% for proposal in proposals %}
-                    <tr>
-                        <td class="max-w-sm px-5 py-3 font-semibold text-slate-900">
-                            <a href="{% url 'proposal_detail' proposal.pk %}" class="hover:text-blue-700">{{ proposal.title }}</a>
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="max-w-sm px-6 py-4 font-semibold text-slate-900">
+                            <a href="{% url 'proposal_detail' proposal.pk %}" class="hover:text-blue-700 transition-colors">{{ proposal.title }}</a>
                         </td>
-                        <td class="px-5 py-3 text-slate-600">{{ proposal.get_proposal_type_display }}</td>
-                        <td class="px-5 py-3 text-slate-600">{{ proposal.get_status_display }}</td>
-                        <td class="px-5 py-3 text-slate-600">{{ proposal.faculty_author.get_full_name|default:proposal.faculty_author.username }}</td>
-                        <td class="px-5 py-3 text-slate-600">{{ proposal.date_submitted|date:"M d, Y" }}</td>
+                        <td class="px-6 py-4 text-slate-600">{{ proposal.get_proposal_type_display }}</td>
+                        <td class="px-6 py-4 text-slate-600">{{ proposal.get_status_display }}</td>
+                        <td class="px-6 py-4 text-slate-600">{{ proposal.faculty_author.get_full_name|default:proposal.faculty_author.username }}</td>
+                        <td class="px-6 py-4 text-slate-600">{{ proposal.date_submitted|date:"M d, Y" }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="px-5 py-8 text-center text-sm font-medium text-slate-500">No proposals found.</td>
+                        <td colspan="5" class="px-6 py-12 text-center text-sm font-medium text-slate-500">No proposals found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        {% if proposals_paginator.num_pages > 1 %}
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white px-6 py-4 border-t border-slate-200/60">
+            <p class="text-sm text-slate-700">
+                Showing <span class="font-bold text-slate-900">{{ proposals.start_index }}</span> to <span class="font-bold text-slate-900">{{ proposals.end_index }}</span> of <span class="font-bold text-slate-900">{{ proposals_paginator.count }}</span> entries
+            </p>
+            <div class="flex gap-2">
+                {% if proposals.has_previous %}
+                <a href="?page={{ proposals.previous_page_number }}{% if filter_querystring %}&{{ filter_querystring }}{% endif %}" class="px-4 py-2 text-sm font-bold text-slate-600 border border-slate-200/60 rounded-xl hover:bg-slate-50 transition-colors">Previous</a>
+                {% endif %}
+                {% if proposals.has_next %}
+                <a href="?page={{ proposals.next_page_number }}{% if filter_querystring %}&{{ filter_querystring }}{% endif %}" class="px-4 py-2 text-sm font-bold text-slate-600 border border-slate-200/60 rounded-xl hover:bg-slate-50 transition-colors">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 
-    <div class="rounded-lg border border-slate-200 bg-white shadow-sm print-break-inside-avoid">
-        <div class="border-b border-slate-200 px-5 py-4">
+    <div class="rounded-2xl border border-slate-200/60 bg-white shadow-lg print-break-inside-avoid">
+        <div class="border-b border-slate-200/60 px-6 py-4">
             <h2 class="text-base font-bold text-slate-950">Research Records</h2>
             <p class="text-sm text-slate-500">Research progress, lead researcher, start date, and funding</p>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-200 text-sm">
-                <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+            <table class="min-w-full divide-y divide-slate-100/80 text-sm">
+                <thead class="bg-gradient-to-r from-slate-50 to-slate-100/80 text-left text-xs font-bold uppercase tracking-wider text-slate-600">
                     <tr>
-                        <th class="px-5 py-3">Title</th>
-                        <th class="px-5 py-3">Status</th>
-                        <th class="px-5 py-3">Lead</th>
-                        <th class="px-5 py-3">Start</th>
-                        <th class="px-5 py-3">Funding</th>
+                        <th class="px-6 py-4">Title</th>
+                        <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4">Lead</th>
+                        <th class="px-6 py-4">Start</th>
+                        <th class="px-6 py-4">Funding</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 bg-white">
+                <tbody class="divide-y divide-slate-100/80 bg-white">
                     {% for record in research_records %}
-                    <tr>
-                        <td class="max-w-sm px-5 py-3 font-semibold text-slate-900">
-                            <a href="{% url 'research_detail' record.pk %}" class="hover:text-blue-700">{{ record.proposal.title }}</a>
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="max-w-sm px-6 py-4 font-semibold text-slate-900">
+                            <a href="{% url 'research_detail' record.pk %}" class="hover:text-blue-700 transition-colors">{{ record.proposal.title }}</a>
                         </td>
-                        <td class="px-5 py-3 text-slate-600">{{ record.get_status_display }}</td>
-                        <td class="px-5 py-3 text-slate-600">{{ record.lead_researcher.get_full_name|default:record.lead_researcher.username }}</td>
-                        <td class="px-5 py-3 text-slate-600">{{ record.start_date|date:"M d, Y" }}</td>
-                        <td class="px-5 py-3 text-slate-600">PHP {{ record.funding_amount|default:"0.00" }}</td>
+                        <td class="px-6 py-4 text-slate-600">{{ record.get_status_display }}</td>
+                        <td class="px-6 py-4 text-slate-600">{{ record.lead_researcher.get_full_name|default:record.lead_researcher.username }}</td>
+                        <td class="px-6 py-4 text-slate-600">{{ record.start_date|date:"M d, Y" }}</td>
+                        <td class="px-6 py-4 text-slate-600">PHP {{ record.funding_amount|default:"0.00" }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="px-5 py-8 text-center text-sm font-medium text-slate-500">No research records found.</td>
+                        <td colspan="5" class="px-6 py-12 text-center text-sm font-medium text-slate-500">No research records found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        {% if research_paginator.num_pages > 1 %}
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white px-6 py-4 border-t border-slate-200/60">
+            <p class="text-sm text-slate-700">
+                Showing <span class="font-bold text-slate-900">{{ research_records.start_index }}</span> to <span class="font-bold text-slate-900">{{ research_records.end_index }}</span> of <span class="font-bold text-slate-900">{{ research_paginator.count }}</span> entries
+            </p>
+            <div class="flex gap-2">
+                {% if research_records.has_previous %}
+                <a href="?page={{ research_records.previous_page_number }}{% if filter_querystring %}&{{ filter_querystring }}{% endif %}" class="px-4 py-2 text-sm font-bold text-slate-600 border border-slate-200/60 rounded-xl hover:bg-slate-50 transition-colors">Previous</a>
+                {% endif %}
+                {% if research_records.has_next %}
+                <a href="?page={{ research_records.next_page_number }}{% if filter_querystring %}&{{ filter_querystring }}{% endif %}" class="px-4 py-2 text-sm font-bold text-slate-600 border border-slate-200/60 rounded-xl hover:bg-slate-50 transition-colors">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 
-    <div class="rounded-lg border border-slate-200 bg-white shadow-sm print-break-inside-avoid">
-        <div class="border-b border-slate-200 px-5 py-4">
+    <div class="rounded-2xl border border-slate-200/60 bg-white shadow-lg print-break-inside-avoid">
+        <div class="border-b border-slate-200/60 px-6 py-4">
             <h2 class="text-base font-bold text-slate-950">Extension Activities</h2>
             <p class="text-sm text-slate-500">Activity status, coordinator, location, and beneficiaries</p>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-200 text-sm">
-                <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+            <table class="min-w-full divide-y divide-slate-100/80 text-sm">
+                <thead class="bg-gradient-to-r from-slate-50 to-slate-100/80 text-left text-xs font-bold uppercase tracking-wider text-slate-600">
                     <tr>
-                        <th class="px-5 py-3">Title</th>
-                        <th class="px-5 py-3">Status</th>
-                        <th class="px-5 py-3">Coordinator</th>
-                        <th class="px-5 py-3">Location</th>
-                        <th class="px-5 py-3">Beneficiaries</th>
+                        <th class="px-6 py-4">Title</th>
+                        <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4">Coordinator</th>
+                        <th class="px-6 py-4">Location</th>
+                        <th class="px-6 py-4">Beneficiaries</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 bg-white">
+                <tbody class="divide-y divide-slate-100/80 bg-white">
                     {% for record in extension_records %}
-                    <tr>
-                        <td class="max-w-sm px-5 py-3 font-semibold text-slate-900">
-                            <a href="{% url 'extension_detail' record.pk %}" class="hover:text-blue-700">{{ record.title }}</a>
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="max-w-sm px-6 py-4 font-semibold text-slate-900">
+                            <a href="{% url 'extension_detail' record.pk %}" class="hover:text-blue-700 transition-colors">{{ record.title }}</a>
                         </td>
-                        <td class="px-5 py-3 text-slate-600">{{ record.get_status_display }}</td>
-                        <td class="px-5 py-3 text-slate-600">{{ record.coordinator.get_full_name|default:record.coordinator.username }}</td>
-                        <td class="px-5 py-3 text-slate-600">{{ record.location }}</td>
-                        <td class="px-5 py-3 text-slate-600">{{ record.beneficiary_count }}</td>
+                        <td class="px-6 py-4 text-slate-600">{{ record.get_status_display }}</td>
+                        <td class="px-6 py-4 text-slate-600">{{ record.coordinator.get_full_name|default:record.coordinator.username }}</td>
+                        <td class="px-6 py-4 text-slate-600">{{ record.location }}</td>
+                        <td class="px-6 py-4 text-slate-600">{{ record.beneficiary_count }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="px-5 py-8 text-center text-sm font-medium text-slate-500">No extension activities found.</td>
+                        <td colspan="5" class="px-6 py-12 text-center text-sm font-medium text-slate-500">No extension activities found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        {% if extension_paginator.num_pages > 1 %}
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white px-6 py-4 border-t border-slate-200/60">
+            <p class="text-sm text-slate-700">
+                Showing <span class="font-bold text-slate-900">{{ extension_records.start_index }}</span> to <span class="font-bold text-slate-900">{{ extension_records.end_index }}</span> of <span class="font-bold text-slate-900">{{ extension_paginator.count }}</span> entries
+            </p>
+            <div class="flex gap-2">
+                {% if extension_records.has_previous %}
+                <a href="?page={{ extension_records.previous_page_number }}{% if filter_querystring %}&{{ filter_querystring }}{% endif %}" class="px-4 py-2 text-sm font-bold text-slate-600 border border-slate-200/60 rounded-xl hover:bg-slate-50 transition-colors">Previous</a>
+                {% endif %}
+                {% if extension_records.has_next %}
+                <a href="?page={{ extension_records.next_page_number }}{% if filter_querystring %}&{{ filter_querystring }}{% endif %}" class="px-4 py-2 text-sm font-bold text-slate-600 border border-slate-200/60 rounded-xl hover:bg-slate-50 transition-colors">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 
-    <div class="rounded-lg border border-slate-200 bg-white shadow-sm print-break-inside-avoid">
-        <div class="border-b border-slate-200 px-5 py-4">
+    <div class="rounded-2xl border border-slate-200/60 bg-white shadow-lg print-break-inside-avoid">
+        <div class="border-b border-slate-200/60 px-6 py-4">
             <h2 class="text-base font-bold text-slate-950">Narrative Reports</h2>
             <p class="text-sm text-slate-500">Quarterly extension report submissions included in this scope</p>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-200 text-sm">
-                <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+            <table class="min-w-full divide-y divide-slate-100/80 text-sm">
+                <thead class="bg-gradient-to-r from-slate-50 to-slate-100/80 text-left text-xs font-bold uppercase tracking-wider text-slate-600">
                     <tr>
-                        <th class="px-5 py-3">Activity</th>
-                        <th class="px-5 py-3">Quarter</th>
-                        <th class="px-5 py-3">Year</th>
-                        <th class="px-5 py-3">Submitted By</th>
-                        <th class="px-5 py-3">Submitted</th>
+                        <th class="px-6 py-4">Activity</th>
+                        <th class="px-6 py-4">Quarter</th>
+                        <th class="px-6 py-4">Year</th>
+                        <th class="px-6 py-4">Submitted By</th>
+                        <th class="px-6 py-4">Submitted</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 bg-white">
+                <tbody class="divide-y divide-slate-100/80 bg-white">
                     {% for report in narrative_reports %}
-                    <tr>
-                        <td class="max-w-sm px-5 py-3 font-semibold text-slate-900">
-                            <a href="{% url 'extension_detail' report.extension_record.pk %}" class="hover:text-blue-700">{{ report.extension_record.title }}</a>
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="max-w-sm px-6 py-4 font-semibold text-slate-900">
+                            <a href="{% url 'extension_detail' report.extension_record.pk %}" class="hover:text-blue-700 transition-colors">{{ report.extension_record.title }}</a>
                         </td>
-                        <td class="px-5 py-3 text-slate-600">{{ report.get_quarter_display }}</td>
-                        <td class="px-5 py-3 text-slate-600">{{ report.report_year }}</td>
-                        <td class="px-5 py-3 text-slate-600">{{ report.submitted_by.get_full_name|default:report.submitted_by.username }}</td>
-                        <td class="px-5 py-3 text-slate-600">{{ report.date_submitted|date:"M d, Y" }}</td>
+                        <td class="px-6 py-4 text-slate-600">{{ report.get_quarter_display }}</td>
+                        <td class="px-6 py-4 text-slate-600">{{ report.report_year }}</td>
+                        <td class="px-6 py-4 text-slate-600">{{ report.submitted_by.get_full_name|default:report.submitted_by.username }}</td>
+                        <td class="px-6 py-4 text-slate-600">{{ report.date_submitted|date:"M d, Y" }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="px-5 py-8 text-center text-sm font-medium text-slate-500">No narrative reports found.</td>
+                        <td colspan="5" class="px-6 py-12 text-center text-sm font-medium text-slate-500">No narrative reports found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        {% if narrative_paginator.num_pages > 1 %}
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white px-6 py-4 border-t border-slate-200/60">
+            <p class="text-sm text-slate-700">
+                Showing <span class="font-bold text-slate-900">{{ narrative_reports.start_index }}</span> to <span class="font-bold text-slate-900">{{ narrative_reports.end_index }}</span> of <span class="font-bold text-slate-900">{{ narrative_paginator.count }}</span> entries
+            </p>
+            <div class="flex gap-2">
+                {% if narrative_reports.has_previous %}
+                <a href="?page={{ narrative_reports.previous_page_number }}{% if filter_querystring %}&{{ filter_querystring }}{% endif %}" class="px-4 py-2 text-sm font-bold text-slate-600 border border-slate-200/60 rounded-xl hover:bg-slate-50 transition-colors">Previous</a>
+                {% endif %}
+                {% if narrative_reports.has_next %}
+                <a href="?page={{ narrative_reports.next_page_number }}{% if filter_querystring %}&{{ filter_querystring }}{% endif %}" class="px-4 py-2 text-sm font-bold text-slate-600 border border-slate-200/60 rounded-xl hover:bg-slate-50 transition-colors">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

@@ -3,6 +3,7 @@ from datetime import date
 from io import BytesIO
 from urllib.parse import urlencode
 
+from django.core.paginator import Paginator
 from django.db.models import Q, Sum
 from django.utils import timezone
 from reportlab.lib import colors
@@ -101,6 +102,9 @@ def _apply_status_filter(queryset, model, status):
 
 def get_report_context(user, params=None):
     filters = _active_filters(params)
+    page = int(params.get('page', 1)) if params and params.get('page') else 1
+    per_page = 10
+    
     proposals = Proposal.objects.select_related('faculty_author')
     research_records = ResearchRecord.objects.select_related('proposal', 'lead_researcher')
     extension_records = ExtensionRecord.objects.select_related('proposal', 'coordinator')
@@ -226,14 +230,23 @@ def get_report_context(user, params=None):
     total_funding = research_records.aggregate(total=Sum('funding_amount'))['total']
     total_beneficiaries = extension_records.aggregate(total=Sum('beneficiary_count'))['total'] or 0
 
+    proposals_paginator = Paginator(proposals, per_page)
+    research_paginator = Paginator(research_records, per_page)
+    extension_paginator = Paginator(extension_records, per_page)
+    narrative_paginator = Paginator(narrative_reports, per_page)
+
     return {
         'generated_at': timezone.localtime(),
         'scope_label': scope_label,
         'scope_description': scope_description,
-        'proposals': proposals,
-        'research_records': research_records,
-        'extension_records': extension_records,
-        'narrative_reports': narrative_reports,
+        'proposals': proposals_paginator.get_page(page),
+        'research_records': research_paginator.get_page(page),
+        'extension_records': extension_paginator.get_page(page),
+        'narrative_reports': narrative_paginator.get_page(page),
+        'proposals_paginator': proposals_paginator,
+        'research_paginator': research_paginator,
+        'extension_paginator': extension_paginator,
+        'narrative_paginator': narrative_paginator,
         'total_proposals': proposals.count(),
         'total_research': research_records.count(),
         'total_extension': extension_records.count(),

@@ -61,11 +61,18 @@
                     Dashboard
                 </a>
                 
-                <a href="{% url 'proposal_list' %}" class="flex items-center px-3 py-2.5 mt-1 rounded-lg transition-all duration-200 group {% if 'proposal' in request.resolver_match.url_name %}bg-white/10 text-white shadow-sm ring-1 ring-white/10 font-semibold border-l-2 border-blue-400{% else %}text-slate-300 hover:bg-white/[0.06] hover:text-white{% endif %}">
-                    <svg class="w-5 h-5 mr-3 transition-colors {% if 'proposal' in request.resolver_match.url_name %}text-blue-200{% else %}text-slate-500 group-hover:text-blue-200{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="{% url 'proposal_list' %}" class="flex items-center px-3 py-2.5 mt-1 rounded-lg transition-all duration-200 group {% if 'proposal' in request.resolver_match.url_name and request.resolver_match.url_name != 'proposal_tracking_dashboard' %}bg-white/10 text-white shadow-sm ring-1 ring-white/10 font-semibold border-l-2 border-blue-400{% else %}text-slate-300 hover:bg-white/[0.06] hover:text-white{% endif %}">
+                    <svg class="w-5 h-5 mr-3 transition-colors {% if 'proposal' in request.resolver_match.url_name and request.resolver_match.url_name != 'proposal_tracking_dashboard' %}text-blue-200{% else %}text-slate-500 group-hover:text-blue-200{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                     Proposals
+                </a>
+
+                <a href="{% url 'proposal_tracking_dashboard' %}" class="flex items-center px-3 py-2.5 mt-1 rounded-lg transition-all duration-200 group {% if request.resolver_match.url_name == 'proposal_tracking_dashboard' %}bg-white/10 text-white shadow-sm ring-1 ring-white/10 font-semibold border-l-2 border-blue-400{% else %}text-slate-300 hover:bg-white/[0.06] hover:text-white{% endif %}">
+                    <svg class="w-5 h-5 mr-3 transition-colors {% if request.resolver_match.url_name == 'proposal_tracking_dashboard' %}text-blue-200{% else %}text-slate-500 group-hover:text-blue-200{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 118 0v2m-6-9h4m-9 13h14a2 2 0 002-2v-5a2 2 0 00-2-2H4a2 2 0 00-2 2v5a2 2 0 002 2z"></path>
+                    </svg>
+                    Tracking
                 </a>
 
                 <a href="{% url 'comprehensive_reports' %}" class="flex items-center px-3 py-2.5 mt-1 rounded-lg transition-all duration-200 group {% if 'report' in request.resolver_match.url_name %}bg-white/10 text-white shadow-sm ring-1 ring-white/10 font-semibold border-l-2 border-blue-400{% else %}text-slate-300 hover:bg-white/[0.06] hover:text-white{% endif %}">

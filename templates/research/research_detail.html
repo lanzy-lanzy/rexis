@@ -94,10 +94,12 @@
                     <div>
                         <h3 class="text-base font-bold text-slate-800 mb-4 px-1">Original Proposal Context</h3>
                         <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                            {% if record.proposal.project_progress_status != 'PRESENTED' and record.proposal.project_progress_status != 'COMPLETED' and record.proposal.project_progress_status != 'PUBLISHED' %}
                             <div class="p-5 border-b border-slate-100 bg-slate-50/50">
                                 <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Abstract</p>
                                 <p class="text-sm text-slate-600">{{ record.proposal.abstract }}</p>
                             </div>
+                            {% endif %}
                             
                             {% if record.proposal.proposal_document %}
                             <div class="p-4 bg-white flex items-center justify-between">
@@ -110,9 +112,9 @@
                                         <p class="text-xs text-slate-500">Read the original submission</p>
                                     </div>
                                 </div>
-                                <a href="{{ record.proposal.proposal_document.url }}" target="_blank" class="px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
-                                    View PDF
-                                </a>
+                                <button type="button" x-data @click="$dispatch('open-document-preview', { url: '{{ record.proposal.proposal_document.url }}', title: '{{ record.proposal.title|escapejs }}' })" class="px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                                    Preview PDF
+                                </button>
                             </div>
                             {% endif %}
                         </div>
@@ -229,4 +231,5 @@
         </div>
     </div>
 </div>
+{% include 'proposals/partials/universal_document_preview.html' %}
 {% endblock %}

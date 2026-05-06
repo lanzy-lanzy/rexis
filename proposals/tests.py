@@ -8,7 +8,15 @@ from django.utils import timezone
 from users.models import CustomUser, UserRole
 
 from . import models as proposal_models
-from .models import Proposal, ProposalStatus, ProposalType, ProposalRequirement
+from .models import (
+    Proposal,
+    ProposalStatus,
+    ProposalType,
+    ProposalRequirement,
+    ProjectProgressStatus,
+    ProposalTrackingEvent,
+    ProposalTrackingEventType,
+)
 
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
@@ -323,7 +331,18 @@ class ProposalTwoStageWorkflowViewTests(TestCase):
             'abstract': 'This abstract is long enough to satisfy proposal validation for workflow.',
             'full_description': 'This full description is enough for a submitted workflow proposal.',
             'proposal_type': ProposalType.RESEARCH,
+            'project_status': ProjectProgressStatus.ONGOING,
             'research_staff': '',
+            'proposal_document': SimpleUploadedFile(
+                'proposal.pdf',
+                b'%PDF-1.4 proposal',
+                content_type='application/pdf',
+            ),
+            'budget_pdf': SimpleUploadedFile(
+                'budget.pdf',
+                b'%PDF-1.4 budget',
+                content_type='application/pdf',
+            ),
         }
         payload.update(overrides)
         return payload
@@ -339,6 +358,19 @@ class ProposalTwoStageWorkflowViewTests(TestCase):
         self.assertEqual(created.faculty_author, self.faculty)
         self.assertEqual(created.submitted_by, self.faculty)
         self.assertFalse(created.submitted_on_behalf)
+        self.assertEqual(created.project_progress_status, ProjectProgressStatus.ONGOING)
+        self.assertTrue(
+            created.tracking_events.filter(
+                event_type=ProposalTrackingEventType.SUBMITTED,
+                title='Proposal submitted',
+            ).exists()
+        )
+        self.assertTrue(
+            created.tracking_events.filter(
+                event_type=ProposalTrackingEventType.DOCUMENTS_UPLOADED,
+                description__icontains='Proposal Document',
+            ).exists()
+        )
 
     def test_staff_can_submit_on_behalf_of_faculty(self):
         self.client.login(username='workflow-staff-view', password='password')
@@ -355,6 +387,56 @@ class ProposalTwoStageWorkflowViewTests(TestCase):
         self.assertEqual(created.submitted_by, self.staff)
         self.assertTrue(created.submitted_on_behalf)
 
+    def test_presented_submission_does_not_require_full_description(self):
+        self.client.login(username='workflow-faculty-view', password='password')
+
+        response = self.client.post(
+            reverse('proposal_create'),
+            self.proposal_payload(
+                project_status=ProjectProgressStatus.PRESENTED,
+                full_description='',
+                proposal_document='',
+                budget_pdf='',
+                certificate_of_appearance=SimpleUploadedFile(
+                    'appearance.pdf',
+                    b'%PDF-1.4 appearance',
+                    content_type='application/pdf',
+                ),
+                certificate_of_participation=SimpleUploadedFile(
+                    'participation.pdf',
+                    b'%PDF-1.4 participation',
+                    content_type='application/pdf',
+                ),
+                abstract_document=SimpleUploadedFile(
+                    'abstract.pdf',
+                    b'%PDF-1.4 abstract',
+                    content_type='application/pdf',
+                ),
+                conference_proceedings=SimpleUploadedFile(
+                    'proceedings.pdf',
+                    b'%PDF-1.4 proceedings',
+                    content_type='application/pdf',
+                ),
+            ),
+        )
+
+        created = Proposal.objects.get(title='Submitted Workflow Proposal')
+        self.assertRedirects(response, reverse('proposal_list'))
+        self.assertEqual(created.project_progress_status, ProjectProgressStatus.PRESENTED)
+        self.assertEqual(created.full_description, '')
+
+    def test_ongoing_submission_requires_full_description(self):
+        self.client.login(username='workflow-faculty-view', password='password')
+
+        response = self.client.post(
+            reverse('proposal_create'),
+            self.proposal_payload(full_description=''),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Full description is required for Ongoing status.')
+        self.assertFalse(Proposal.objects.filter(title='Submitted Workflow Proposal').exists())
+
     def test_admin_cannot_review_before_staff_recommendation(self):
         self.client.login(username='workflow-admin', password='password')
 
@@ -364,11 +446,20 @@ class ProposalTwoStageWorkflowViewTests(TestCase):
 
     def test_staff_detail_page_shows_recommend_action_for_pending_proposal(self):
         self.client.login(username='workflow-staff-view', password='password')
+        ProposalTrackingEvent.objects.create(
+            proposal=self.proposal,
+            event_type=ProposalTrackingEventType.SUBMITTED,
+            title='Proposal submitted',
+            status=ProposalStatus.PENDING_RECOMMENDATION,
+            actor=self.faculty,
+        )
 
         response = self.client.get(reverse('proposal_detail', args=[self.proposal.pk]))
 
         self.assertContains(response, 'Review & Recommend')
         self.assertContains(response, reverse('proposal_recommend', args=[self.proposal.pk]))
+        self.assertContains(response, 'Proposal Tracking')
+        self.assertContains(response, 'Proposal submitted')
 
     def test_staff_can_recommend_proposal_for_admin_approval(self):
         self.client.login(username='workflow-staff-view', password='password')
@@ -386,6 +477,12 @@ class ProposalTwoStageWorkflowViewTests(TestCase):
         self.assertEqual(self.proposal.status, ProposalStatus.RECOMMENDED_APPROVAL)
         self.assertEqual(self.proposal.recommended_by, self.staff)
         self.assertIsNotNone(self.proposal.recommended_at)
+        self.assertTrue(
+            self.proposal.tracking_events.filter(
+                event_type=ProposalTrackingEventType.RECOMMENDED_APPROVAL,
+                title='Recommended for admin approval',
+            ).exists()
+        )
 
     def test_staff_revision_requires_notes(self):
         self.client.login(username='workflow-staff-view', password='password')
@@ -419,6 +516,106 @@ class ProposalTwoStageWorkflowViewTests(TestCase):
         self.proposal.refresh_from_db()
         self.assertEqual(self.proposal.status, ProposalStatus.PENDING_RECOMMENDATION)
         self.assertEqual(self.proposal.requirements.count(), 0)
+
+    def test_staff_recommendation_page_shows_all_submitted_documents_with_preview(self):
+        self.proposal.project_progress_status = ProjectProgressStatus.PRESENTED
+        self.proposal.proposal_document.name = 'proposals/documents/main-proposal.pdf'
+        self.proposal.budget_pdf.name = 'proposals/budgets/project-budget.pdf'
+        self.proposal.abstract_document.name = 'proposals/abstracts/abstract.pdf'
+        self.proposal.certificate_of_appearance.name = 'proposals/certificates/appearance.pdf'
+        self.proposal.certificate_of_participation.name = 'proposals/certificates/participation.pdf'
+        self.proposal.conference_proceedings.name = 'proposals/proceedings/proceedings.pdf'
+        self.proposal.save()
+        ProposalTrackingEvent.objects.create(
+            proposal=self.proposal,
+            event_type=ProposalTrackingEventType.DOCUMENTS_UPLOADED,
+            title='Submission documents uploaded',
+            description='Presented project documents uploaded.',
+            status=ProposalStatus.PENDING_RECOMMENDATION,
+            actor=self.faculty,
+        )
+        self.client.login(username='workflow-staff-view', password='password')
+
+        response = self.client.get(reverse('proposal_recommend', args=[self.proposal.pk]))
+
+        self.assertContains(response, 'All Proposal Documents')
+        self.assertContains(response, 'Preview Proposal document')
+        self.assertContains(response, 'Preview Budget file')
+        self.assertContains(response, 'Preview Abstract document')
+        self.assertContains(response, 'Preview Certificate of appearance')
+        self.assertContains(response, 'Preview Certificate of participation')
+        self.assertContains(response, 'Preview Conference proceedings')
+        self.assertContains(response, 'universalDocumentPreview')
+        self.assertIn('document_versions', response.context)
+        self.assertIn('tracking_events', response.context)
+        self.assertIn('document_statuses', response.context)
+
+    def test_faculty_uploaded_documents_are_available_in_staff_detail_context(self):
+        self.client.login(username='workflow-faculty-view', password='password')
+
+        response = self.client.post(
+            reverse('proposal_create'),
+            self.proposal_payload(
+                project_status=ProjectProgressStatus.PUBLISHED,
+                full_description='',
+                proposal_document='',
+                budget_pdf='',
+                full_paper=SimpleUploadedFile(
+                    'full-paper.pdf',
+                    b'%PDF-1.4 full paper',
+                    content_type='application/pdf',
+                ),
+                certificate_of_publication=SimpleUploadedFile(
+                    'publication-certificate.pdf',
+                    b'%PDF-1.4 certificate',
+                    content_type='application/pdf',
+                ),
+            ),
+        )
+
+        self.assertRedirects(response, reverse('proposal_list'))
+        proposal = Proposal.objects.get(title='Submitted Workflow Proposal')
+        self.client.logout()
+        self.client.login(username='workflow-staff-view', password='password')
+
+        response = self.client.get(reverse('proposal_detail', args=[proposal.pk]))
+
+        self.assertContains(response, 'All Proposal Documents')
+        self.assertContains(response, 'Preview Full paper')
+        self.assertContains(response, 'Preview Certificate of publication')
+        self.assertIn('document_statuses', response.context)
+
+    def test_staff_detail_hides_submission_narrative_for_presented_proposal(self):
+        self.proposal.project_progress_status = ProjectProgressStatus.PRESENTED
+        self.proposal.abstract = 'Submission-only abstract should not appear for presented work.'
+        self.proposal.full_description = 'Submission-only full description should not appear for presented work.'
+        self.proposal.save()
+        self.client.login(username='workflow-staff-view', password='password')
+
+        response = self.client.get(reverse('proposal_detail', args=[self.proposal.pk]))
+
+        self.assertContains(response, 'Presented')
+        self.assertContains(response, 'All Proposal Documents')
+        self.assertNotContains(response, 'Submission-only abstract should not appear for presented work.')
+        self.assertNotContains(response, 'Submission-only full description should not appear for presented work.')
+        self.assertNotContains(response, '>Abstract<', html=False)
+        self.assertNotContains(response, '>Full Description<', html=False)
+
+    def test_faculty_detail_hides_submission_narrative_for_published_proposal(self):
+        self.proposal.project_progress_status = ProjectProgressStatus.PUBLISHED
+        self.proposal.abstract = 'Submission-only abstract should not appear for published work.'
+        self.proposal.full_description = 'Submission-only full description should not appear for published work.'
+        self.proposal.save()
+        self.client.login(username='workflow-faculty-view', password='password')
+
+        response = self.client.get(reverse('proposal_detail', args=[self.proposal.pk]))
+
+        self.assertContains(response, 'Published')
+        self.assertContains(response, 'All Proposal Documents')
+        self.assertNotContains(response, 'Submission-only abstract should not appear for published work.')
+        self.assertNotContains(response, 'Submission-only full description should not appear for published work.')
+        self.assertNotContains(response, '>Abstract<', html=False)
+        self.assertNotContains(response, '>Full Description<', html=False)
 
     def test_staff_revision_stores_missing_requirements_for_resubmission(self):
         self.client.login(username='workflow-staff-view', password='password')
@@ -488,6 +685,104 @@ class ProposalTwoStageWorkflowViewTests(TestCase):
         self.proposal.refresh_from_db()
         self.assertEqual(self.proposal.status, ProposalStatus.APPROVED)
         self.assertEqual(self.proposal.reviewed_by, self.admin)
+        self.assertTrue(
+            self.proposal.tracking_events.filter(
+                event_type=ProposalTrackingEventType.ADMIN_APPROVED,
+                title='Approved by admin',
+            ).exists()
+        )
+
+    def test_staff_can_filter_admin_approved_proposals(self):
+        self.proposal.status = ProposalStatus.APPROVED
+        self.proposal.reviewed_by = self.admin
+        self.proposal.reviewed_at = timezone.now()
+        self.proposal.save()
+        self.client.login(username='workflow-staff-view', password='password')
+
+        response = self.client.get(reverse('proposal_list'), {'status': ProposalStatus.APPROVED})
+
+        self.assertContains(response, 'Two Stage Review Proposal')
+        self.assertContains(response, 'Approved by Admin')
+
+    def test_tracking_dashboard_shows_document_status_and_latest_event(self):
+        self.proposal.status = ProposalStatus.APPROVED
+        self.proposal.project_progress_status = ProjectProgressStatus.ONGOING
+        self.proposal.proposal_document.name = 'proposals/documents/trackable-proposal.pdf'
+        self.proposal.save()
+        ProposalTrackingEvent.objects.create(
+            proposal=self.proposal,
+            event_type=ProposalTrackingEventType.ADMIN_APPROVED,
+            title='Approved by admin',
+            status=ProposalStatus.APPROVED,
+            actor=self.admin,
+        )
+        self.client.login(username='workflow-staff-view', password='password')
+
+        response = self.client.get(reverse('proposal_tracking_dashboard'))
+
+        self.assertContains(response, 'Document Tracking')
+        self.assertContains(response, 'Two Stage Review Proposal')
+        self.assertContains(response, 'Approved by Admin')
+        self.assertContains(response, 'Proposal document')
+        self.assertContains(response, 'Budget file')
+        self.assertContains(response, 'Uploaded')
+        self.assertContains(response, 'Missing')
+        self.assertContains(response, 'Approved by admin')
+
+    def test_tracking_dashboard_searches_document_filename(self):
+        self.proposal.project_progress_status = ProjectProgressStatus.ONGOING
+        self.proposal.proposal_document.name = 'proposals/documents/trackable-proposal.pdf'
+        self.proposal.save()
+        Proposal.objects.create(
+            title='Different Faculty Proposal',
+            abstract='This proposal should not appear in the document filename search.',
+            full_description='Different proposal description.',
+            proposal_type=ProposalType.RESEARCH,
+            faculty_author=self.faculty,
+            submitted_by=self.faculty,
+            project_progress_status=ProjectProgressStatus.ONGOING,
+        )
+        self.client.login(username='workflow-staff-view', password='password')
+
+        response = self.client.get(
+            reverse('proposal_tracking_dashboard'),
+            {'search': 'trackable-proposal.pdf'},
+        )
+
+        self.assertContains(response, 'Two Stage Review Proposal')
+        self.assertNotContains(response, 'Different Faculty Proposal')
+
+    def test_tracking_dashboard_filters_missing_required_documents(self):
+        complete_proposal = Proposal.objects.create(
+            title='Complete Tracking Proposal',
+            abstract='This proposal has all required tracking documents.',
+            full_description='Complete proposal description.',
+            proposal_type=ProposalType.RESEARCH,
+            faculty_author=self.faculty,
+            submitted_by=self.faculty,
+            project_progress_status=ProjectProgressStatus.ONGOING,
+        )
+        complete_proposal.proposal_document.name = 'proposals/documents/complete.pdf'
+        complete_proposal.budget_pdf.name = 'proposals/budgets/complete-budget.pdf'
+        complete_proposal.save()
+        self.proposal.project_progress_status = ProjectProgressStatus.ONGOING
+        self.proposal.proposal_document.name = 'proposals/documents/incomplete.pdf'
+        self.proposal.save()
+        ProposalRequirement.objects.create(
+            proposal=self.proposal,
+            requirement_key='workplan',
+            label='Workplan',
+        )
+        self.client.login(username='workflow-staff-view', password='password')
+
+        response = self.client.get(
+            reverse('proposal_tracking_dashboard'),
+            {'document_status': 'missing'},
+        )
+
+        self.assertContains(response, 'Two Stage Review Proposal')
+        self.assertContains(response, 'Workplan')
+        self.assertNotContains(response, 'Complete Tracking Proposal')
 
     def test_revision_resubmission_returns_to_staff_recommendation(self):
         self.proposal.status = ProposalStatus.RECOMMENDED_REVISION
@@ -516,3 +811,9 @@ class ProposalTwoStageWorkflowViewTests(TestCase):
         self.assertEqual(self.proposal.status, ProposalStatus.PENDING_RECOMMENDATION)
         self.assertIsNone(self.proposal.recommended_by)
         self.assertIsNone(self.proposal.recommended_at)
+        self.assertTrue(
+            self.proposal.tracking_events.filter(
+                event_type=ProposalTrackingEventType.RESUBMITTED,
+                title='Requested documents resubmitted',
+            ).exists()
+        )
