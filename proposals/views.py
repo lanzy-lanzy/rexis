@@ -176,10 +176,15 @@ def replace_proposal_requirements(proposal, fixed_keys, custom_labels):
 @login_required
 def proposal_list(request: HttpRequest) -> HttpResponse:
     proposals = visible_proposals_for_user(request.user)
+    progress_base_proposals = proposals
 
     status_filter = request.GET.get('status')
     if status_filter:
         proposals = proposals.filter(status=status_filter)
+
+    progress_status_filter = request.GET.get('progress_status')
+    if progress_status_filter:
+        proposals = proposals.filter(project_progress_status=progress_status_filter)
 
     type_filter = request.GET.get('proposal_type')
     if type_filter:
@@ -197,11 +202,32 @@ def proposal_list(request: HttpRequest) -> HttpResponse:
     paginator = Paginator(proposals, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+    progress_status_choices = [
+        (ProjectProgressStatus.ONGOING, ProjectProgressStatus.ONGOING.label),
+        (ProjectProgressStatus.COMPLETED, ProjectProgressStatus.COMPLETED.label),
+        (ProjectProgressStatus.PRESENTED, ProjectProgressStatus.PRESENTED.label),
+        (ProjectProgressStatus.PUBLISHED, ProjectProgressStatus.PUBLISHED.label),
+    ]
+    progress_summary = [
+        {
+            'value': value,
+            'label': label,
+            'count': progress_base_proposals.filter(
+                status=ProposalStatus.APPROVED,
+                project_progress_status=value,
+            ).count(),
+            'is_active': progress_status_filter == value,
+        }
+        for value, label in progress_status_choices
+    ]
 
     context = {
         'page_obj': page_obj,
         'status_choices': ProposalStatus.choices,
         'type_choices': ProposalType.choices,
+        'progress_status_choices': progress_status_choices,
+        'progress_status_filter': progress_status_filter,
+        'progress_summary': progress_summary,
     }
     return render(request, 'proposals/proposal_list.html', context)
 

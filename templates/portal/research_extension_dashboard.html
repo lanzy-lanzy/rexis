@@ -10,7 +10,7 @@
         <p class="text-slate-300 mt-2">Review faculty proposals before admin approval and monitor approved project progress.</p>
     </section>
 
-    <section class="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    <section class="grid sm:grid-cols-2 xl:grid-cols-6 gap-4">
         <div class="metric-card bg-white border border-slate-200/60 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-shadow">
             <p class="text-xs font-bold uppercase text-slate-500">Pending Recommendations</p>
             <p class="text-2xl font-bold text-slate-900 mt-2">{{ total_pending_recommendations }}</p>
@@ -19,18 +19,22 @@
             <p class="text-xs font-bold uppercase text-slate-500">Recommended For Admin</p>
             <p class="text-2xl font-bold text-slate-900 mt-2">{{ total_recommended_for_admin }}</p>
         </div>
-        <div class="metric-card bg-white border border-slate-200/60 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-shadow">
+        <a href="{% url 'proposal_list' %}?status=APPROVED&progress_status=ONGOING" class="metric-card bg-white border border-slate-200/60 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500/40">
             <p class="text-xs font-bold uppercase text-slate-500">Ongoing</p>
             <p class="text-2xl font-bold text-slate-900 mt-2">{{ ongoing_projects }}</p>
-        </div>
-        <div class="metric-card bg-white border border-slate-200/60 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-shadow">
-            <p class="text-xs font-bold uppercase text-slate-500">Presented</p>
-            <p class="text-2xl font-bold text-slate-900 mt-2">{{ presented_projects }}</p>
-        </div>
-        <div class="metric-card bg-white border border-slate-200/60 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-shadow">
+        </a>
+        <a href="{% url 'proposal_list' %}?status=APPROVED&progress_status=COMPLETED" class="metric-card bg-white border border-slate-200/60 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
             <p class="text-xs font-bold uppercase text-slate-500">Completed</p>
             <p class="text-2xl font-bold text-slate-900 mt-2">{{ completed_projects }}</p>
-        </div>
+        </a>
+        <a href="{% url 'proposal_list' %}?status=APPROVED&progress_status=PRESENTED" class="metric-card bg-white border border-slate-200/60 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/40">
+            <p class="text-xs font-bold uppercase text-slate-500">Presented</p>
+            <p class="text-2xl font-bold text-slate-900 mt-2">{{ presented_projects }}</p>
+        </a>
+        <a href="{% url 'proposal_list' %}?status=APPROVED&progress_status=PUBLISHED" class="metric-card bg-white border border-slate-200/60 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-purple-500/40">
+            <p class="text-xs font-bold uppercase text-slate-500">Published</p>
+            <p class="text-2xl font-bold text-slate-900 mt-2">{{ published_projects }}</p>
+        </a>
     </section>
 
     <section class="bg-white border border-slate-200/60 rounded-2xl overflow-hidden shadow-lg">

@@ -75,6 +75,35 @@
                     Tracking
                 </a>
 
+                {% if user.is_research_extension_staff %}
+                <div x-data="{ open: {% if request.resolver_match.url_name == 'proposal_list' and request.GET.progress_status %}true{% else %}false{% endif %} }" class="mt-1">
+                    <button @click="open = !open" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 group {% if request.resolver_match.url_name == 'proposal_list' and request.GET.progress_status %}bg-white/10 text-white shadow-sm ring-1 ring-white/10 font-semibold border-l-2 border-blue-400{% else %}text-slate-300 hover:bg-white/[0.06] hover:text-white{% endif %}">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-3 transition-colors {% if request.resolver_match.url_name == 'proposal_list' and request.GET.progress_status %}text-blue-200{% else %}text-slate-500 group-hover:text-blue-200{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h10M4 17h7m9-5l-3 3m0 0l-3-3m3 3V6"></path>
+                            </svg>
+                            Project Status
+                        </div>
+                        <svg class="w-4 h-4 text-slate-500 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+
+                    <div x-show="open" x-collapse class="mt-1 space-y-1 pl-11 pr-2">
+                        <a href="{% url 'proposal_list' %}?status=APPROVED&progress_status=ONGOING" class="block px-3 py-2 text-sm rounded-md transition-colors {% if request.GET.progress_status == 'ONGOING' %}bg-blue-500/20 text-blue-100 font-semibold{% else %}text-slate-400 hover:bg-white/[0.06] hover:text-white{% endif %}">
+                            Ongoing
+                        </a>
+                        <a href="{% url 'proposal_list' %}?status=APPROVED&progress_status=COMPLETED" class="block px-3 py-2 text-sm rounded-md transition-colors {% if request.GET.progress_status == 'COMPLETED' %}bg-blue-500/20 text-blue-100 font-semibold{% else %}text-slate-400 hover:bg-white/[0.06] hover:text-white{% endif %}">
+                            Completed
+                        </a>
+                        <a href="{% url 'proposal_list' %}?status=APPROVED&progress_status=PRESENTED" class="block px-3 py-2 text-sm rounded-md transition-colors {% if request.GET.progress_status == 'PRESENTED' %}bg-blue-500/20 text-blue-100 font-semibold{% else %}text-slate-400 hover:bg-white/[0.06] hover:text-white{% endif %}">
+                            Presented
+                        </a>
+                        <a href="{% url 'proposal_list' %}?status=APPROVED&progress_status=PUBLISHED" class="block px-3 py-2 text-sm rounded-md transition-colors {% if request.GET.progress_status == 'PUBLISHED' %}bg-blue-500/20 text-blue-100 font-semibold{% else %}text-slate-400 hover:bg-white/[0.06] hover:text-white{% endif %}">
+                            Published
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
                 <a href="{% url 'comprehensive_reports' %}" class="flex items-center px-3 py-2.5 mt-1 rounded-lg transition-all duration-200 group {% if 'report' in request.resolver_match.url_name %}bg-white/10 text-white shadow-sm ring-1 ring-white/10 font-semibold border-l-2 border-blue-400{% else %}text-slate-300 hover:bg-white/[0.06] hover:text-white{% endif %}">
                     <svg class="w-5 h-5 mr-3 transition-colors {% if 'report' in request.resolver_match.url_name %}text-blue-200{% else %}text-slate-500 group-hover:text-blue-200{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>

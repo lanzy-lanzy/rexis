@@ -704,6 +704,45 @@ class ProposalTwoStageWorkflowViewTests(TestCase):
         self.assertContains(response, 'Two Stage Review Proposal')
         self.assertContains(response, 'Approved by Admin')
 
+    def test_staff_can_filter_proposals_by_project_progress_status(self):
+        self.proposal.status = ProposalStatus.APPROVED
+        self.proposal.project_progress_status = ProjectProgressStatus.ONGOING
+        self.proposal.save()
+        Proposal.objects.create(
+            title='Published Faculty Work',
+            abstract='This published work should not appear in the ongoing project filter.',
+            full_description='Published project description.',
+            proposal_type=ProposalType.RESEARCH,
+            faculty_author=self.faculty,
+            submitted_by=self.faculty,
+            status=ProposalStatus.APPROVED,
+            project_progress_status=ProjectProgressStatus.PUBLISHED,
+        )
+        self.client.login(username='workflow-staff-view', password='password')
+
+        response = self.client.get(
+            reverse('proposal_list'),
+            {
+                'status': ProposalStatus.APPROVED,
+                'progress_status': ProjectProgressStatus.ONGOING,
+            },
+        )
+
+        self.assertContains(response, 'Two Stage Review Proposal')
+        self.assertContains(response, 'Ongoing')
+        self.assertNotContains(response, 'Published Faculty Work')
+
+    def test_staff_sidebar_contains_project_status_navigation(self):
+        self.client.login(username='workflow-staff-view', password='password')
+
+        response = self.client.get(reverse('proposal_list'))
+
+        self.assertContains(response, 'Project Status')
+        self.assertContains(response, 'progress_status=ONGOING')
+        self.assertContains(response, 'progress_status=COMPLETED')
+        self.assertContains(response, 'progress_status=PRESENTED')
+        self.assertContains(response, 'progress_status=PUBLISHED')
+
     def test_tracking_dashboard_shows_document_status_and_latest_event(self):
         self.proposal.status = ProposalStatus.APPROVED
         self.proposal.project_progress_status = ProjectProgressStatus.ONGOING

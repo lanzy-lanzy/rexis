@@ -85,6 +85,10 @@ def research_extension_dashboard(request: HttpRequest) -> HttpResponse:
         status=ProposalStatus.APPROVED,
         project_progress_status='COMPLETED',
     )
+    published_projects = Proposal.objects.filter(
+        status=ProposalStatus.APPROVED,
+        project_progress_status='PUBLISHED',
+    )
 
     context = {
         'pending_recommendations': pending_recommendations[:5],
@@ -94,6 +98,7 @@ def research_extension_dashboard(request: HttpRequest) -> HttpResponse:
         'ongoing_projects': ongoing_projects.count(),
         'presented_projects': presented_projects.count(),
         'completed_projects': completed_projects.count(),
+        'published_projects': published_projects.count(),
         'my_submitted_proposals': Proposal.objects.filter(submitted_by=user)[:5],
     }
     return render(request, 'portal/research_extension_dashboard.html', context)
