@@ -387,6 +387,52 @@ class ProposalTwoStageWorkflowViewTests(TestCase):
         self.assertEqual(created.submitted_by, self.staff)
         self.assertTrue(created.submitted_on_behalf)
 
+    def test_published_submission_does_not_require_publication_attachments(self):
+        self.client.login(username='workflow-faculty-view', password='password')
+
+        response = self.client.post(
+            reverse('proposal_create'),
+            self.proposal_payload(
+                project_status=ProjectProgressStatus.PUBLISHED,
+                full_description='',
+                proposal_document='',
+                budget_pdf='',
+                full_paper='',
+                certificate_of_publication='',
+            ),
+        )
+
+        created = Proposal.objects.get(title='Submitted Workflow Proposal')
+        self.assertRedirects(response, reverse('proposal_list'))
+        self.assertEqual(created.project_progress_status, ProjectProgressStatus.PUBLISHED)
+        self.assertFalse(created.full_paper)
+        self.assertFalse(created.certificate_of_publication)
+
+    def test_staff_can_submit_published_proposal_on_behalf_without_publication_attachments(self):
+        self.client.login(username='workflow-staff-view', password='password')
+
+        response = self.client.post(
+            reverse('proposal_create'),
+            self.proposal_payload(
+                faculty_author=self.faculty.pk,
+                project_status=ProjectProgressStatus.PUBLISHED,
+                full_description='',
+                proposal_document='',
+                budget_pdf='',
+                full_paper='',
+                certificate_of_publication='',
+            ),
+        )
+
+        created = Proposal.objects.get(title='Submitted Workflow Proposal')
+        self.assertRedirects(response, reverse('proposal_list'))
+        self.assertEqual(created.faculty_author, self.faculty)
+        self.assertEqual(created.submitted_by, self.staff)
+        self.assertTrue(created.submitted_on_behalf)
+        self.assertEqual(created.project_progress_status, ProjectProgressStatus.PUBLISHED)
+        self.assertFalse(created.full_paper)
+        self.assertFalse(created.certificate_of_publication)
+
     def test_presented_submission_does_not_require_full_description(self):
         self.client.login(username='workflow-faculty-view', password='password')
 

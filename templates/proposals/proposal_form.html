@@ -906,14 +906,14 @@ const REQUIRED_DOCS = {
     'ONGOING': ['proposal_document', 'budget_pdf'],
     'COMPLETED': ['progress_report'],
     'PRESENTED': ['certificate_of_appearance', 'certificate_of_participation', 'abstract_document', 'conference_proceedings'],
-    'PUBLISHED': ['full_paper', 'certificate_of_publication']
+    'PUBLISHED': []
 };
 
 const STATUS_INFO = {
     'ONGOING': { label: 'Ongoing', icon: 'clock', color: 'blue', desc: 'Proposal document and budget file required' },
     'COMPLETED': { label: 'Completed', icon: 'check', color: 'emerald', desc: 'Progress Report/Terminal Report required (approved by R&E office after submission)' },
     'PRESENTED': { label: 'Presented', icon: 'presentation', color: 'purple', desc: 'Certificate of Appearance, Certificate of Participation, Abstract Document, and Conference Proceedings required' },
-    'PUBLISHED': { label: 'Published', icon: 'book', color: 'amber', desc: 'Full Paper and Certificate of Publication required' }
+    'PUBLISHED': { label: 'Published', icon: 'book', color: 'amber', desc: 'Full Paper and Certificate of Publication optional' }
 };
 
 function proposalWizard() {

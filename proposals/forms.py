@@ -20,7 +20,7 @@ REQUIRED_DOCUMENTS_BY_STATUS = {
         'abstract_document',
         'conference_proceedings',
     ],
-    ProjectProgressStatus.PUBLISHED: ['full_paper', 'certificate_of_publication'],
+    ProjectProgressStatus.PUBLISHED: [],
 }
 
 DOCUMENT_ERROR_LABELS = {
